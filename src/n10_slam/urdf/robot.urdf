@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+<robot name="slam_robot">
+  
+  <!-- 底盘 -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.25 0.20 0.08"/>
+      </geometry>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <material name="blue">
+        <color rgba="0.2 0.4 0.8 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <!-- 前方向标记（红色箭头） -->
+  <link name="front_marker">
+    <visual>
+      <geometry>
+        <box size="0.08 0.04 0.02"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="front_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="front_marker"/>
+    <origin xyz="0.12 0 0.08" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- 左轮 -->
+  <link name="left_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.03"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="left_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_wheel"/>
+    <origin xyz="0 0.11 0.04" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- 右轮 -->
+  <link name="right_wheel">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.03"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <material name="black">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="right_wheel_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_wheel"/>
+    <origin xyz="0 -0.11 0.04" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- 激光雷达 -->
+  <link name="laser_frame">
+    <visual>
+      <geometry>
+        <cylinder radius="0.04" length="0.05"/>
+      </geometry>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <material name="gray">
+        <color rgba="0.5 0.5 0.5 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="laser_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="laser_frame"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+  </joint>
+  
+  <!-- IMU -->
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="0.02 0.02 0.01"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+  </link>
+  
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+</robot>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>n10_pkg</name>
+  <version>0.1.0</version>
+  <description>N10 Laser Radar driver package</description>
+
+  <maintainer email="jetson@todo.todo">jetson</maintainer>
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/n10_pkg</url>
+  <author email="jetson@todo.todo">jetson</author>
+
+  <!-- 构建工具依赖 -->
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- 构建依赖 -->
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  
+  <!-- 构建导出依赖 -->
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  
+  <!-- 执行依赖 -->
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>python-serial</exec_depend>
+
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>

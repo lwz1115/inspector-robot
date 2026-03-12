@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Python 3版本启动文件 -->
+    
+    <!-- 设置全局Python 3环境 -->
+    <env name="ROS_PYTHON_VERSION" value="3"/>
+    
+    <!-- ================== 节点1: GPS节点 ================== -->
+    <node name="gps_node" pkg="gps_driver" type="gps_publisher.py" 
+          output="screen" respawn="false">
+        <param name="port" type="string" value="/dev/ttyUSB0"/>
+        <param name="baudrate" type="int" value="9600"/>
+    </node>
+
+    <!-- ================== 节点2: 串口节点 ================== -->
+    <!-- 等待5秒后启动，输出到日志文件 -->
+    <node name="jetbot_serial_reader" pkg="packet_pkg" type="serial_node.py" 
+          output="log" respawn="false">
+        <param name="port" type="string" value="/dev/ttyACM0"/>
+        <param name="baudrate" type="int" value="115200"/>
+        <!-- 延迟启动 -->
+        <param name="start_delay" type="double" value="5.0"/>
+    </node>
+
+    <!-- ================== 节点3: 阿里云节点 ================== -->
+    <!-- 等待10秒后启动 -->
+    <node name="aliyun_ros_node" pkg="aliyun_pkg" type="aliyun_node.py" 
+          output="screen" respawn="false">
+        <!-- 延迟启动 -->
+        <param name="start_delay" type="double" value="10.0"/>
+    </node>
+
+</launch>

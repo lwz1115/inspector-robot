@@ -1,0 +1,10 @@
+controller_frequency: 3.0
+planner_frequency: 0.5
+controller_patience: 10.0
+planner_patience: 10.0
+conservative_reset_dist: 0.3
+recovery_behavior_enabled: true
+clearing_rotation_allowed: true
+shutdown_costmaps: false
+oscillation_timeout: 15.0
+oscillation_distance: 0.3

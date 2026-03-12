@@ -1,0 +1,8 @@
+prefix=/home/jetson/catkin_ws/devel
+
+Name: gps_driver
+Description: Description of gps_driver
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs

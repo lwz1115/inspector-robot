@@ -1,0 +1,32 @@
+DWAPlannerROS:
+  # 速度限制 - 调大
+  max_vel_x: 0.5
+  min_vel_x: 0.1
+  max_vel_y: 0.0
+  min_vel_y: 0.0
+  max_vel_trans: 0.5
+  min_vel_trans: 0.15
+  max_vel_theta: 1.5
+  min_vel_theta: 0.5
+  
+  # 加速度
+  acc_lim_x: 2.0
+  acc_lim_y: 0.0
+  acc_lim_theta: 3.0
+  
+  # 目标容差
+  xy_goal_tolerance: 0.15
+  yaw_goal_tolerance: 0.3
+  latch_xy_goal_tolerance: false
+  
+  # 仿真参数
+  sim_time: 1.5
+  sim_granularity: 0.05
+  vx_samples: 10
+  vy_samples: 1
+  vtheta_samples: 20
+  
+  # 评分权重
+  path_distance_bias: 32.0
+  goal_distance_bias: 24.0
+  occdist_scale: 0.05

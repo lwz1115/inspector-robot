@@ -1,0 +1,2 @@
+aliyun_pkg:camera_pkg:gps_driver:lsx10/lslidar:lsx10/lslidar_driver:lsx10/lslidar_msgs:n10_pkg:n10_slam:packet_pkg:ros_imu_ws/src
+-DCATKIN_DEVEL_PREFIX=/home/jetson/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/jetson/catkin_ws/install -G Unix Makefiles

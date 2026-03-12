@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- 启动摄像头节点 -->
+    <node name="camera_node" pkg="camera_pkg" type="camera_node.py" output="screen">
+        <!-- 降低画质参数配置 -->
+        <param name="resolution_width" type="int" value="640" />
+        <param name="resolution_height" type="int" value="480" />
+        <param name="frame_rate" type="int" value="15" />
+        <param name="quality" type="int" value="50" />
+        <!-- 如果是MJPG格式，可以设置较低的压缩质量 -->
+        <param name="jpeg_quality" type="int" value="30" />
+    </node>
+
+    <!-- 启动人脸识别节点 -->
+    <node name="face_node" pkg="camera_pkg" type="face_node.py" output="screen" required="true">
+        <!-- 人脸识别节点也可以相应调整处理参数 -->
+        <param name="processing_scale" type="double" value="0.5" />
+    </node>
+</launch>
