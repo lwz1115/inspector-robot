@@ -16,6 +16,6 @@ include_directories(
 
 # 安装Python脚本 - 修正路径
 catkin_install_python(PROGRAMS
-  src/gps_publisher.py
+  scripts/gps_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

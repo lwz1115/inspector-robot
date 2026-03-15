@@ -161,10 +161,14 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  src/camera_node.py
-  src/face_node.py
-  src/face_trainer.py
+  scripts/camera_node.py
+  scripts/face_node.py
+  scripts/face_trainer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
 ## Mark executables for installation

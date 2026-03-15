@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(n10_slam)
 
+add_compile_options(-std=c++17)
+
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
   rospy
   std_msgs
   sensor_msgs
@@ -15,11 +18,18 @@ catkin_package()
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-# 安装Python脚本
+# C++ 里程计节点
+add_executable(odometry_node src/odometry_node.cpp)
+target_link_libraries(odometry_node ${catkin_LIBRARIES})
+add_dependencies(odometry_node ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS odometry_node
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# 安装Python脚本（保留 jetbot_serial_control，删除已替换的节点）
 catkin_install_python(PROGRAMS
-  scripts/n10_lidar_node.py
   scripts/jetbot_serial_control.py
-  scripts/odometry_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

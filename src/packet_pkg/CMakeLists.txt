@@ -73,9 +73,9 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 catkin_install_python(PROGRAMS
-  src/packet_node.py
-  src/jetbot_keyboard.py
-  src/serial_node.py
+  scripts/packet_node.py
+  scripts/jetbot_keyboard.py
+  scripts/serial_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -7,7 +7,7 @@
     <!-- 官方lslidar驱动 -->
     <node pkg="lslidar_driver" type="lslidar_driver_node" name="lslidar_driver_node" output="screen">
         <param name="lidar_name" value="N10"/>
-        <param name="serial_port" value="/dev/ttyTHS1"/>
+        <param name="serial_port" value="/dev/ttyN10"/>
         <param name="interface_selection" value="serial"/>
         <param name="frame_id" value="laser_frame"/>
         <param name="scan_topic" value="scan"/>
@@ -20,12 +20,12 @@
     </node>
     
     <!-- STM32通信 -->
-    <node pkg="n10_slam" type="jetbot_serial_control.py" name="jetbot_serial" output="screen">
+    <node pkg="packet_pkg" type="serial_node.py" name="jetbot_serial" output="screen">
         <param name="port" value="$(arg stm32_port)"/>
     </node>
     
-    <!-- 里程计 -->
-    <node pkg="n10_slam" type="odometry_node.py" name="odometry_node" output="screen"/>
+    <!-- 里程计 (C++) -->
+    <node pkg="n10_slam" type="odometry_node" name="odometry_node" output="screen"/>
     
     <!-- TF: 激光雷达旋转180度！ -->
     <!-- 参数: x y z yaw pitch roll frame child_frame period_ms -->

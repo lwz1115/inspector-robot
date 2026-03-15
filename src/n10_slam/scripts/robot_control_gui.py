@@ -496,7 +496,7 @@ class RobotControlGUI(QMainWindow):
             try:
                 # 授权串口
                 os.system('sudo chmod 666 /dev/ttyACM0 2>/dev/null')
-                os.system('sudo chmod 666 /dev/ttyTHS1 2>/dev/null')
+                os.system('sudo chmod 666 /dev/ttyN10 2>/dev/null')
                 os.system('sudo chmod 666 /dev/ttyUSB0 2>/dev/null')
                 
                 self.processes[node_name] = subprocess.Popen(
