@@ -2,7 +2,7 @@
 # catkin/cmake/toplevel.cmake
 
 cmake_minimum_required(VERSION 3.0.2)
-set(PYTHON_EXECUTABLE /usr/bin/python2)
+set(PYTHON_EXECUTABLE /usr/bin/python3)
 project(Project)
 
 set(CATKIN_TOPLEVEL TRUE)
