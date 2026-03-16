@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>用户登录</title>
+  <link href="//unpkg.com/layui@2.13.0/dist/css/layui.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0c1a2d 0%, #1a3a5f 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Microsoft YaHei', sans-serif;
+    }
+
+    .login-container {
+      width: 400px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .login-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .login-header {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      padding: 30px 20px;
+      text-align: center;
+      color: white;
+    }
+
+    .login-header h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .login-header p {
+      margin: 10px 0 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .login-body {
+      padding: 30px;
+    }
+
+    .layui-form-item {
+      margin-bottom: 20px;
+    }
+
+    .layui-input-wrap {
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e6e6e6;
+      transition: all 0.3s ease;
+    }
+
+    .layui-input-wrap:focus-within {
+      border-color: #00f2fe;
+      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
+    }
+
+    .layui-input-prefix {
+      background-color: #f8f8f8;
+    }
+
+    .layui-input {
+      border: none;
+      background: transparent;
+    }
+
+    .layui-btn {
+      background: linear-gradient(135deg, #00f2fe, #4facfe);
+      border: none;
+      border-radius: 6px;
+      height: 44px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .layui-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+    }
+
+    .login-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .login-footer a {
+      color: #00f2fe;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .login-footer a:hover {
+      color: #4facfe;
+      text-decoration: underline;
+    }
+
+    .remember-me {
+      display: flex;
+      align-items: center;
+    }
+
+    .remember-me .layui-form-checkbox {
+      margin-right: 5px;
+    }
+
+    .system-info {
+      text-align: center;
+      margin-top: 30px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+
+    .system-info p {
+      margin: 5px 0;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      height: 60px;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        width: 90%;
+        margin: 20px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<div>
+  <div class="login-container">
+    <div class="login-header">
+      <h2>园区智能巡检系统</h2>
+      <p>欢迎登录，请使用您的账号密码</p>
+    </div>
+    <div class="login-body">
+      <form class="layui-form">
+        <div class="layui-form-item">
+          <div class="layui-input-wrap">
+            <div class="layui-input-prefix">
+              <i class="layui-icon layui-icon-username"></i>
+            </div>
+            <input type="text" name="username" value="" lay-verify="required" placeholder="用户名" lay-reqtext="请填写用户名" autocomplete="off" class="layui-input">
+          </div>
+        </div>
+        <div class="layui-form-item">
+          <div class="layui-input-wrap">
+            <div class="layui-input-prefix">
+              <i class="layui-icon layui-icon-password"></i>
+            </div>
+            <input type="password" name="password" value="" lay-verify="required" placeholder="密码" autocomplete="off" class="layui-input" lay-affix="eye">
+          </div>
+        </div>
+        <div class="login-footer">
+          <div class="remember-me">
+            <input type="checkbox" name="remember" lay-skin="primary" title="记住密码">
+          </div>
+          <a href="register.html">注册新账号</a>
+        </div>
+        <div class="layui-form-item">
+          <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login">登录</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="system-info">
+    <p>园区智能巡检监控系统 v2.0</p>
+    <p>© 2023 智能园区技术有限公司 版权所有</p>
+  </div>
+</div>
+
+<script src="//unpkg.com/layui@2.13.0/dist/layui.js"></script>
+<script>
+  layui.use(function(){
+    var $ = layui.$;
+    var form = layui.form;
+    var layer = layui.layer;
+
+    // 登录提交：使用POST请求
+    form.on('submit(login)', function(data){
+      var field = data.field;
+      console.log('登录提交:', field);
+
+      var loadIndex = layer.load(1, {shade: [0.1, '#fff']});
+
+      // 使用POST请求
+      $.ajax({
+        url: 'http://localhost:8080/api/auth/login',
+        type: 'POST',
+        data: {
+          username: field.username,
+          password: field.password
+        },
+        success: function(res) {
+          layer.close(loadIndex);
+          console.log('登录响应:', res);
+          if(res.success) {
+            // 保存用户信息到本地存储
+            localStorage.setItem('currentUsername', field.username);
+            localStorage.setItem('userId', res.userId);
+
+            layer.msg('登录成功！', {icon: 1, time: 1500}, function(){
+              window.location.href = 'monitor.html';
+            });
+          } else {
+            layer.msg(res.message, {icon: 2});
+          }
+        },
+        error: function(xhr, status, error) {
+          layer.close(loadIndex);
+          console.error('登录请求失败:', error);
+          if (xhr.status === 0) {
+            layer.msg('无法连接到服务器，请检查后端服务是否启动', {icon: 2});
+          } else {
+            layer.msg('登录失败：' + error, {icon: 2});
+          }
+        }
+      });
+      return false;
+    });
+  });
+</script>
+</body>
+</html>
