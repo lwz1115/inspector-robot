@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>园区巡检监控系统</title>
+<script src="https://webapi.amap.com/maps?v=2.0&key=c216de193661bf95f9891763d1837c8f"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Microsoft YaHei',sans-serif}
+:root{
+  --bg-dark:#1a1f2e;--bg-panel:#242938;--bg-card:#2d3347;--border:#3a4060;
+  --accent:#00d4ff;--accent2:#4facfe;--text:#e0e6f0;--text-muted:#8892a4;
+  --success:#52c41a;--warning:#faad14;--danger:#ff4d4f;
+  --sidebar-w:220px;--header-h:60px;
+}
+body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
+.layout{display:flex;height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-logo{height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:bold;color:var(--accent);gap:8px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;color:var(--text-muted);font-size:14px;transition:all .2s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(0,212,255,.06);color:var(--text)}
+.nav-item.active{background:rgba(0,212,255,.1);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .icon{font-size:17px;width:20px;text-align:center}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:var(--header-h);background:var(--bg-panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
+.topbar-title{font-size:15px;color:var(--text-muted)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite}
+.status-dot.offline{background:var(--danger);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.user-menu{position:relative}
+.user-btn{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;color:var(--text);transition:all .2s}
+.user-btn:hover{border-color:var(--accent)}
+.avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#fff}
+.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;min-width:130px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:1000}
+.dropdown.show{display:block}
+.dropdown-item{padding:10px 16px;font-size:13px;cursor:pointer;color:var(--text-muted);transition:all .2s}
+.dropdown-item:hover{background:rgba(0,212,255,.08);color:var(--text)}
+.dropdown-item.danger:hover{color:var(--danger)}
+.content{flex:1;overflow:hidden}
+.page{display:none;height:100%;padding:20px;overflow-y:auto}
+.page.active{display:block}
+.card{background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:20px}
+.card-title{font-size:14px;font-weight:bold;color:var(--accent);margin-bottom:16px;border-left:3px solid var(--accent);padding-left:10px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;transition:transform .2s,box-shadow .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,255,.15)}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:8px}
+.stat-value{font-size:24px;font-weight:bold;color:var(--accent)}
+.stat-unit{font-size:12px;color:var(--text-muted);margin-left:3px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.toast{position:fixed;top:70px;right:20px;padding:10px 18px;border-radius:6px;font-size:13px;z-index:9999;animation:slideIn .3s ease;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.toast.success{background:var(--success);color:#fff}.toast.error{background:var(--danger);color:#fff}
+.toast.info{background:#1890ff;color:#fff}.toast.warning{background:var(--warning);color:#fff}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px}
+.empty .icon{font-size:36px;margin-bottom:10px}
+.robot-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+.robot-item:hover{border-color:var(--accent);background:rgba(0,212,255,.05)}
+.robot-name{font-weight:bold;color:var(--accent);font-size:14px}
+.robot-meta{font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.8}
+.battery-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:8px;overflow:hidden}
+.battery-fill{height:100%;border-radius:3px;transition:width .3s}
+.bat-high{background:var(--success)}.bat-mid{background:var(--warning)}.bat-low{background:var(--danger)}
+.alert-item{background:rgba(255,77,79,.08);border:1px solid rgba(255,77,79,.3);border-radius:6px;padding:10px;margin-bottom:8px;font-size:12px;color:var(--text)}
+.route-input{width:100%;background:var(--bg-dark);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:9px 12px;font-size:13px}
+.route-input:focus{outline:none;border-color:var(--accent)}
+.route-input::placeholder{color:var(--text-muted)}
+.btn{border:none;border-radius:6px;padding:9px 16px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,212,255,.35)}
+.btn-danger{background:linear-gradient(135deg,#ff4d4f,#ff7875);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-block{width:100%;margin-top:6px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><span>🏭</span>园区巡检监控系统</div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard"><span class="icon">📊</span>数据监控</div>
+      <div class="nav-item" data-page="video"><span class="icon">📹</span>视频监控</div>
+      <div class="nav-item" data-page="location"><span class="icon">📍</span>位置检测</div>
+      <div class="nav-item" data-page="control"><span class="icon">🎮</span>设备控制</div>
+    </nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title" id="page-title">数据监控</span>
+      <div class="topbar-right">
+        <div style="display:flex;align-items:center;gap:20px;font-size:13px;color:var(--text-muted)">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot"></span><span>系统运行中</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot" id="mqttDot"></span><span id="mqttStatus">MQTT: 连接中...</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span class="status-dot" id="apiDot"></span><span id="apiStatus">API: 检查中...</span>
+          </div>
+          <span id="clockTime"></span>
+        </div>
+        <div class="user-menu">
+          <div class="user-btn" id="userBtn">
+            <div class="avatar" id="avatar">U</div>
+            <span id="username">用户</span>
+            <span style="font-size:11px;color:var(--text-muted)">▾</span>
+          </div>
+          <div class="dropdown" id="dropdown">
+            <div class="dropdown-item danger" id="logoutBtn">退出登录</div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="content">
+
+      <!-- 数据监控 -->
+      <div class="page active" id="page-dashboard">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card">
+            <div class="card-title">📈 实时数据流</div>
+            <div class="stat-grid">
+              <div class="stat-card"><div class="stat-label">卫星数量</div><div class="stat-value" id="d-satellites">--<span class="stat-unit">颗</span></div></div>
+              <div class="stat-card"><div class="stat-label">机器人电量</div><div class="stat-value" id="d-battery">--<span class="stat-unit">%</span></div></div>
+              <div class="stat-card"><div class="stat-label">当前速度</div><div class="stat-value" id="d-speed">--<span class="stat-unit">km/h</span></div></div>
+              <div class="stat-card"><div class="stat-label">海拔高度</div><div class="stat-value" id="d-altitude">--<span class="stat-unit">m</span></div></div>
+              <div class="stat-card"><div class="stat-label">电压</div><div class="stat-value" id="d-voltage">--<span class="stat-unit">V</span></div></div>
+              <div class="stat-card"><div class="stat-label">数据延迟</div><div class="stat-value" id="d-delay">--<span class="stat-unit">秒</span></div></div>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:right">最后更新: <span id="d-lastUpdate">--</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 统计数据</div>
+            <div class="stat-grid">
+              <div class="stat-card"><div class="stat-label">在线机器人</div><div class="stat-value" id="d-online">--</div></div>
+              <div class="stat-card"><div class="stat-label">今日警报</div><div class="stat-value" id="d-alerts">0</div></div>
+            </div>
+            <div class="card-title" style="margin-top:20px">⚠️ 实时警报</div>
+            <div id="d-alertList" style="max-height:200px;overflow-y:auto">
+              <div class="empty"><div class="icon">✅</div>暂无警报</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视频监控 -->
+      <div class="page" id="page-video">
+        <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;height:calc(100vh - 120px)">
+          <!-- 主画面 -->
+          <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:14px;font-weight:bold;color:var(--accent)">📹 实时画面</span>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span class="status-dot" id="faceDot" style="background:var(--text-muted);animation:none"></span>
+                  <span id="faceStatus" style="font-size:12px;color:var(--text-muted)">识别: 未启动</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                  <span class="status-dot" id="camDot" style="background:var(--text-muted);animation:none"></span>
+                  <span id="camStatus" style="font-size:12px;color:var(--text-muted)">未连接</span>
+                </div>
+              </div>
+            </div>
+            <!-- 视频+识别叠加层 -->
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#0a0e1a;position:relative;overflow:hidden">
+              <img id="camImg" style="max-width:100%;max-height:100%;display:none;object-fit:contain">
+              <!-- 人脸识别结果叠加 -->
+              <div id="faceOverlay" style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none"></div>
+              <div id="camPlaceholder" style="text-align:center;color:var(--text-muted)">
+                <div style="font-size:48px;margin-bottom:12px">📷</div>
+                <div>点击右侧"连接"按钮开始</div>
+              </div>
+              <div id="camError" style="display:none;text-align:center;color:var(--danger)">
+                <div style="font-size:36px;margin-bottom:8px">⚠️</div>
+                <div id="camErrorMsg">连接失败</div>
+              </div>
+            </div>
+          </div>
+          <!-- 控制面板 -->
+          <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+            <div class="card">
+              <div class="card-title">⚙️ 画质设置</div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">预设模式</div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <button class="btn btn-ghost" onclick="setQuality(25,320,240)" id="q-low">🐢 低带宽 320×240</button>
+                  <button class="btn btn-ghost" onclick="setQuality(50,640,480)" id="q-mid">🚗 标准 640×480</button>
+                  <button class="btn btn-ghost" onclick="setQuality(75,1280,720)" id="q-high">🚀 高清 1280×720</button>
+                </div>
+              </div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">画质: <span id="qualityVal">25</span></div>
+                <input type="range" id="qualitySlider" min="10" max="90" value="25" style="width:100%;accent-color:var(--accent)"
+                  oninput="document.getElementById('qualityVal').textContent=this.value">
+              </div>
+              <button class="btn btn-primary btn-block" onclick="connectCamera()" id="camConnBtn">▶ 连接摄像头</button>
+              <button class="btn btn-danger btn-block" onclick="disconnectCamera()" id="camDiscBtn" style="display:none">■ 断开</button>
+            </div>
+            <div class="card">
+              <div class="card-title">🤖 人脸识别</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">
+                识别结果实时叠加在画面上<br>绿色=已知人员 黄色=陌生人
+              </div>
+              <button class="btn btn-primary btn-block" onclick="startFace()" id="faceStartBtn">▶ 启动识别</button>
+              <button class="btn btn-danger btn-block" onclick="stopFace()" id="faceStopBtn" style="display:none">■ 停止识别</button>
+              <!-- 识别历史 -->
+              <div style="margin-top:12px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">最近识别记录</div>
+                <div id="faceHistory" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px">暂无记录</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">🎓 人脸训练</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">
+                采集30张人脸照片完成训练<br>训练后重启识别即可生效
+              </div>
+              <button class="btn btn-primary btn-block" onclick="showTrainDialog()" id="trainStartBtn">📷 开始训练</button>
+              <button class="btn btn-danger btn-block" onclick="stopTrain()" id="trainStopBtn" style="display:none">■ 中止训练</button>
+              <div id="trainProgress" style="display:none;margin-top:10px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">采集进度: <span id="trainProgressText">0/30</span></div>
+                <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+                  <div id="trainProgressBar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width .3s"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">📸 截图</div>
+              <button class="btn btn-ghost btn-block" onclick="takeSnapshot()">📷 保存当前帧</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 位置检测 -->
+      <div class="page" id="page-location">
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;height:calc(100vh - 120px)">
+          <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+            <div class="card">
+              <div class="card-title">🤖 机器人状态</div>
+              <div id="loc-robotList"><div class="empty"><div class="icon">📡</div>等待数据...</div></div>
+            </div>
+            <div class="card">
+              <div class="card-title">🗺️ 步行路线规划</div>
+              <div style="margin-bottom:10px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">起点</div>
+                <div style="display:flex;gap:6px">
+                  <input type="text" class="route-input" id="loc-start" placeholder="经度,纬度" style="flex:1">
+                  <button class="btn btn-ghost" onclick="useRobotPos('start')">🤖</button>
+                </div>
+              </div>
+              <div style="margin-bottom:12px">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">终点</div>
+                <div style="display:flex;gap:6px">
+                  <input type="text" class="route-input" id="loc-end" placeholder="经度,纬度" style="flex:1">
+                  <button class="btn btn-ghost" onclick="useRobotPos('end')">🤖</button>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" id="loc-planBtn" onclick="planRoute()">🚶 规划步行路线</button>
+              <button class="btn btn-danger btn-block" onclick="clearRoute()">✕ 清除路线</button>
+              <div id="routeInfo" style="display:none;margin-top:10px;padding:10px;background:var(--bg-dark);border-radius:6px;font-size:13px;color:var(--text-muted)"></div>
+              <div id="destInfo" style="display:none;margin-top:8px;padding:8px;background:rgba(0,212,255,.08);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--accent)"></div>
+              <button class="btn btn-primary btn-block" id="loc-sendBtn" onclick="sendDest()" disabled>📤 发送目的地到机器人</button>
+            </div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden;position:relative">
+            <div id="map" style="width:100%;height:100%"></div>
+            <div style="position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:8px;z-index:100">
+              <button class="btn btn-ghost" onclick="mapFitAll()">🎯 全览</button>
+              <button class="btn btn-ghost" onclick="mapToggleStyle()">🎨 样式</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 设备控制 -->
+      <div class="page" id="page-control">
+        <div class="card" style="height:calc(100vh - 120px);display:flex;align-items:center;justify-content:center">
+          <div class="empty"><div class="icon">🎮</div><div style="font-size:16px;margin-bottom:8px">设备控制</div><div>功能开发中...</div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ── 状态 ──────────────────────────────────────────────────
+const BASE = 'http://localhost:8080/api';
+let robotData = {};
+let mapObj = null, mapReady = false, mapDark = false;
+let routeMarkers = [], routePolylines = [], currentDest = null;
+
+// ── 导航 ──────────────────────────────────────────────────
+const pageTitles = {dashboard:'数据监控',video:'视频监控',location:'位置检测',control:'设备控制'};
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-' + item.dataset.page).classList.add('active');
+    document.getElementById('page-title').textContent = pageTitles[item.dataset.page];
+    if (item.dataset.page === 'location' && !mapReady) initMap();
+  });
+});
+
+// ── 用户菜单 ──────────────────────────────────────────────
+const uname = localStorage.getItem('currentUsername') || '用户';
+document.getElementById('username').textContent = uname;
+document.getElementById('avatar').textContent = uname.charAt(0).toUpperCase();
+document.getElementById('userBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('dropdown').classList.toggle('show');
+});
+document.addEventListener('click', () => document.getElementById('dropdown').classList.remove('show'));
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  try { await fetch(BASE + '/auth/logout', {method:'POST'}); } catch(_) {}
+  localStorage.clear();
+  location.href = '/login.html';
+});
+
+// ── Toast ─────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── 工具 ──────────────────────────────────────────────────
+function parseCoords(str) {
+  const p = str.split(',').map(s => parseFloat(s.trim()));
+  return (p.length===2 && !isNaN(p[0]) && !isNaN(p[1])) ? {lng:p[0],lat:p[1]} : null;
+}
+function timeSince(ts) {
+  if (!ts) return '';
+  const sec = Math.floor((Date.now() - (ts < 1e12 ? ts*1000 : ts)) / 1000);
+  if (sec < 10) return '刚刚';
+  if (sec < 60) return sec + '秒前';
+  if (sec < 3600) return Math.floor(sec/60) + '分钟前';
+  return Math.floor(sec/3600) + '小时前';
+}
+function fmtTime(ts) {
+  if (!ts) return '--';
+  return new Date(ts < 1e12 ? ts*1000 : ts).toLocaleTimeString();
+}
+</script>
+
+<script>
+// ── 数据获取 ──────────────────────────────────────────────
+async function fetchData() {
+  try {
+    const res = await fetch(BASE + '/robot-data', {headers:{'Cache-Control':'no-cache'}});
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    data.sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
+    const map = {};
+    data.forEach(d => {
+      const id = d.deviceId||'robot';
+      if (!map[id] || d.timestamp > map[id].timestamp) map[id] = d;
+    });
+    robotData = map;
+    const robots = Object.values(map);
+    updateDashboard(robots);
+    updateLocation(robots);
+    setStatus(true);
+  } catch(e) {
+    setStatus(false);
+  }
+}
+
+function setStatus(ok) {
+  const color = ok ? 'var(--success)' : 'var(--danger)';
+  const apiDot = document.getElementById('apiDot');
+  const mqttDot = document.getElementById('mqttDot');
+  if (apiDot) apiDot.style.background = color;
+  if (mqttDot) mqttDot.style.background = ok ? 'var(--success)' : 'var(--warning)';
+  document.getElementById('apiStatus').textContent  = ok ? 'API: 已连接'   : 'API: 连接失败';
+  document.getElementById('mqttStatus').textContent = ok ? 'MQTT: 实时数据' : 'MQTT: 无数据';
+}
+
+// 时钟
+function updateClock() {
+  const el = document.getElementById('clockTime');
+  if (el) el.textContent = new Date().toLocaleTimeString();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── 数据监控 ──────────────────────────────────────────────
+function updateDashboard(robots) {
+  if (!robots.length) return;
+  const r = robots[0];
+  const ts = r.timestamp < 1e12 ? r.timestamp*1000 : r.timestamp;
+  const delay = Math.floor((Date.now()-ts)/1000);
+  document.getElementById('d-satellites').innerHTML = (r.satellites||0)+'<span class="stat-unit">颗</span>';
+  document.getElementById('d-battery').innerHTML    = (r.batteryLevel||0)+'<span class="stat-unit">%</span>';
+  document.getElementById('d-speed').innerHTML      = (r.speed||0).toFixed(1)+'<span class="stat-unit">km/h</span>';
+  document.getElementById('d-altitude').innerHTML   = (r.altitude||0).toFixed(1)+'<span class="stat-unit">m</span>';
+  document.getElementById('d-voltage').innerHTML    = (r.voltage||0).toFixed(2)+'<span class="stat-unit">V</span>';
+  document.getElementById('d-delay').innerHTML      = delay+'<span class="stat-unit">秒</span>';
+  document.getElementById('d-online').textContent   = robots.length;
+  document.getElementById('d-lastUpdate').textContent = new Date().toLocaleTimeString();
+  const alerts = robots.filter(x => x.alertMessage?.trim());
+  document.getElementById('d-alerts').textContent = alerts.length;
+  const al = document.getElementById('d-alertList');
+  al.innerHTML = alerts.length ? alerts.map(x=>`
+    <div class="alert-item"><b>${x.deviceId}</b>: ${x.alertMessage}
+    <div style="color:var(--text-muted);margin-top:3px">${fmtTime(x.timestamp)}</div></div>`).join('')
+    : '<div class="empty"><div class="icon">✅</div>暂无警报</div>';
+}
+
+// ── 位置检测 ──────────────────────────────────────────────
+function updateLocation(robots) {
+  if (mapReady) updateMapMarkers(robots);
+  const list = document.getElementById('loc-robotList');
+  if (!list) return;
+  if (!robots.length) { list.innerHTML='<div class="empty"><div class="icon">📡</div>等待数据...</div>'; return; }
+  list.innerHTML = robots.map(r => {
+    const bat = r.batteryLevel||0;
+    const cls = bat>70?'bat-high':bat>30?'bat-mid':'bat-low';
+    return `<div class="robot-item" onclick="focusRobot(${r.longitude},${r.latitude})">
+      <div style="display:flex;justify-content:space-between">
+        <span class="robot-name">${r.deviceId||'robot'}</span>
+        <span style="font-size:12px;color:${bat>30?'var(--success)':'var(--danger)'}">${bat}%</span>
+      </div>
+      <div class="robot-meta">📍 ${(r.longitude||0).toFixed(5)}, ${(r.latitude||0).toFixed(5)}<br>
+        🚀 ${(r.speed||0).toFixed(1)} km/h &nbsp; ⏰ ${timeSince(r.timestamp)}</div>
+      <div class="battery-bar"><div class="battery-fill ${cls}" style="width:${bat}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function focusRobot(lng, lat) {
+  if (mapObj) { mapObj.setCenter([lng,lat]); mapObj.setZoom(18); }
+  document.getElementById('loc-start').value = lng.toFixed(6)+','+lat.toFixed(6);
+}
+
+function useRobotPos(field) {
+  const robots = Object.values(robotData);
+  if (!robots.length) { toast('暂无机器人数据','warning'); return; }
+  const r = robots[0];
+  document.getElementById('loc-'+field).value = r.longitude.toFixed(6)+','+r.latitude.toFixed(6);
+}
+</script>
+
+<script>
+// ── 地图 ──────────────────────────────────────────────────
+function initMap() {
+  if (typeof AMap === 'undefined' || mapReady) return;
+  mapObj = new AMap.Map('map', {zoom:16, center:[118.93069167,32.1230155], viewMode:'3D'});
+  mapObj.on('complete', () => {
+    mapReady = true;
+    updateMapMarkers(Object.values(robotData));
+  });
+}
+
+let mapMarkers = [];
+function updateMapMarkers(robots) {
+  mapMarkers.forEach(m => mapObj.remove(m));
+  mapMarkers = [];
+  robots.forEach(r => {
+    if (!r.longitude||!r.latitude) return;
+    const bat = r.batteryLevel||0;
+    const color = bat<20?'#ff4d4f':bat<50?'#faad14':'#00d4ff';
+    const m = new AMap.Marker({
+      position:[r.longitude,r.latitude],
+      content:`<div style="background:linear-gradient(135deg,${color},#4facfe);border:3px solid #fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,212,255,.5);font-size:16px">🤖</div>`,
+      offset:new AMap.Pixel(-18,-18)
+    });
+    const info = new AMap.InfoWindow({
+      content:`<div style="color:#333;padding:10px;min-width:190px;font-family:'Microsoft YaHei'">
+        <b style="color:#1890ff">${r.deviceId||'robot'}</b><hr style="margin:6px 0">
+        <div>📍 ${(r.longitude||0).toFixed(6)}, ${(r.latitude||0).toFixed(6)}</div>
+        <div>🔋 ${bat}% &nbsp; ⚡ ${(r.voltage||0).toFixed(2)}V</div>
+        <div>🚀 ${(r.speed||0).toFixed(1)} km/h &nbsp; 📡 ${r.satellites||0}颗</div>
+      </div>`,
+      offset:new AMap.Pixel(0,-30)
+    });
+    m.on('click', () => info.open(mapObj, m.getPosition()));
+    mapObj.add(m);
+    mapMarkers.push(m);
+  });
+}
+
+function mapFitAll() {
+  if (mapMarkers.length) mapObj.setFitView(mapMarkers);
+}
+
+function mapToggleStyle() {
+  mapDark = !mapDark;
+  mapObj?.setMapStyle('amap://styles/'+(mapDark?'dark':'normal'));
+}
+
+// ── 路线规划 ──────────────────────────────────────────────
+async function planRoute() {
+  const s = parseCoords(document.getElementById('loc-start').value);
+  const e = parseCoords(document.getElementById('loc-end').value);
+  if (!s) { toast('请输入起点坐标','error'); return; }
+  if (!e) { toast('请输入终点坐标','error'); return; }
+  const btn = document.getElementById('loc-planBtn');
+  btn.disabled = true; btn.textContent = '规划中...';
+  try {
+    const url = `https://restapi.amap.com/v3/direction/walking?origin=${s.lng},${s.lat}&destination=${e.lng},${e.lat}&key=c216de193661bf95f9891763d1837c8f`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.status!=='1'||!data.route?.paths?.length) throw new Error(data.info||'规划失败');
+    const path = data.route.paths[0];
+    clearRoute();
+    const pts = [];
+    path.steps.forEach(step => step.polyline.split(';').forEach(p => {
+      const [lng,lat] = p.split(',').map(Number);
+      if (!isNaN(lng)) pts.push([lng,lat]);
+    }));
+    const poly = new AMap.Polyline({path:pts,strokeColor:'#00d4ff',strokeWeight:5,strokeOpacity:.9,lineJoin:'round'});
+    mapObj.add(poly); routePolylines.push(poly);
+    [[s.lng,s.lat,'起','#52c41a'],[e.lng,e.lat,'终','#ff4d4f']].forEach(([lng,lat,label,color]) => {
+      const m = new AMap.Marker({position:[lng,lat],
+        content:`<div style="background:${color};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)">${label}</div>`,
+        offset:new AMap.Pixel(-14,-14)});
+      mapObj.add(m); routeMarkers.push(m);
+    });
+    mapObj.setFitView([...routeMarkers, poly]);
+    const dist = (path.distance/1000).toFixed(2);
+    const mins = Math.ceil(path.duration/60);
+    const ri = document.getElementById('routeInfo');
+    ri.style.display='block';
+    ri.innerHTML = `距离: <b style="color:var(--accent)">${dist}公里</b> &nbsp;|&nbsp; 步行约 <b style="color:var(--accent)">${mins}分钟</b>`;
+    currentDest = {longitude:e.lng, latitude:e.lat, name:`${e.lng},${e.lat}`};
+    const di = document.getElementById('destInfo');
+    di.style.display='block';
+    di.textContent = `目的地: ${e.lng.toFixed(6)}, ${e.lat.toFixed(6)}`;
+    document.getElementById('loc-sendBtn').disabled = false;
+    toast(`规划完成：${dist}公里，约${mins}分钟`,'success');
+  } catch(err) {
+    toast('路线规划失败: '+err.message,'error');
+  } finally {
+    btn.disabled=false; btn.textContent='🚶 规划步行路线';
+  }
+}
+
+function clearRoute() {
+  routeMarkers.forEach(m => mapObj?.remove(m));
+  routePolylines.forEach(p => mapObj?.remove(p));
+  routeMarkers=[]; routePolylines=[]; currentDest=null;
+  document.getElementById('routeInfo').style.display='none';
+  document.getElementById('destInfo').style.display='none';
+  document.getElementById('loc-sendBtn').disabled=true;
+  document.getElementById('loc-start').value='';
+  document.getElementById('loc-end').value='';
+}
+
+async function sendDest() {
+  if (!currentDest) { toast('请先规划路线','warning'); return; }
+  const btn = document.getElementById('loc-sendBtn');
+  btn.disabled=true; btn.textContent='发送中...';
+  try {
+    const res = await fetch(BASE+'/destination/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'destination',...currentDest})});
+    if (!res.ok) throw new Error(res.status);
+    toast('目的地已发送到机器人','success');
+  } catch(e) {
+    toast('发送失败: '+e.message,'error');
+  } finally {
+    btn.disabled=false; btn.textContent='📤 发送目的地到机器人';
+  }
+}
+
+// ── 摄像头 ────────────────────────────────────────────────
+let camQuality = 25, camWidth = 320, camHeight = 240;
+
+function setQuality(q, w, h) {
+  camQuality=q; camWidth=w; camHeight=h;
+  document.getElementById('qualitySlider').value = q;
+  document.getElementById('qualityVal').textContent = q;
+  ['low','mid','high'].forEach(k => document.getElementById('q-'+k).classList.remove('btn-primary'));
+  if (q===25) document.getElementById('q-low').classList.add('btn-primary');
+  else if (q===50) document.getElementById('q-mid').classList.add('btn-primary');
+  else document.getElementById('q-high').classList.add('btn-primary');
+  if (document.getElementById('camImg').style.display !== 'none') connectCamera();
+}
+
+function connectCamera() {
+  const q = document.getElementById('qualitySlider').value;
+  const img = document.getElementById('camImg');
+  const dot = document.getElementById('camDot');
+  document.getElementById('camPlaceholder').style.display = 'none';
+  document.getElementById('camError').style.display = 'none';
+  dot.style.background = 'var(--warning)';
+  dot.style.animation = 'pulse 2s infinite';
+  document.getElementById('camStatus').textContent = '连接中...';
+  img.onerror = () => {
+    img.style.display = 'none';
+    document.getElementById('camError').style.display = 'block';
+    document.getElementById('camErrorMsg').textContent = '无法连接，请确认 Jetson 已启动 web_video_server';
+    dot.style.background = 'var(--danger)';
+    dot.style.animation = 'none';
+    document.getElementById('camStatus').textContent = '连接失败';
+    document.getElementById('camConnBtn').style.display = 'block';
+    document.getElementById('camDiscBtn').style.display = 'none';
+  };
+  img.onload = () => {
+    dot.style.background = 'var(--success)';
+    document.getElementById('camStatus').textContent = '直播中';
+  };
+  img.src = 'http://192.168.2.235:8081/stream?topic=/image&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
+  img.style.display = 'block';
+  document.getElementById('camConnBtn').style.display = 'none';
+  document.getElementById('camDiscBtn').style.display = 'block';
+}
+
+function disconnectCamera() {
+  const img = document.getElementById('camImg');
+  img.src = ''; img.style.display = 'none';
+  document.getElementById('camPlaceholder').style.display = 'block';
+  document.getElementById('camDot').style.background = 'var(--text-muted)';
+  document.getElementById('camDot').style.animation = 'none';
+  document.getElementById('camStatus').textContent = '未连接';
+  document.getElementById('camConnBtn').style.display = 'block';
+  document.getElementById('camDiscBtn').style.display = 'none';
+}
+
+function takeSnapshot() {
+  const img = document.getElementById('camImg');
+  if (!img.src || img.style.display==='none') { toast('请先连接摄像头','warning'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth || camWidth;
+  canvas.height = img.naturalHeight || camHeight;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/jpeg');
+  a.download = 'snapshot_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.jpg';
+  a.click();
+  toast('截图已保存','success');
+}
+
+// ── 人脸识别 & 训练 SSE ───────────────────────────────────
+let faceSSE = null;
+const faceHistoryList = [];
+const MAX_HISTORY = 20;
+let faceOverlayTimer = null;
+
+// 启动 SSE 监听（识别结果 + 训练进度共用同一条流）
+function initFaceSSE() {
+  if (faceSSE) return;
+  faceSSE = new EventSource(BASE + '/face/events');
+
+  faceSSE.addEventListener('connected', () => {
+    console.log('face SSE connected');
+  });
+
+  faceSSE.addEventListener('face', e => {
+    try {
+      const d = JSON.parse(e.data);
+      if (d.type === 'face') {
+        showFaceOverlay(d);
+        addFaceHistory(d);
+      } else if (d.type === 'train') {
+        handleTrainEvent(d);
+      } else if (d.type === 'node_status') {
+        updateFaceNodeStatus(d.status);
+      }
+    } catch(_) {}
+  });
+
+  faceSSE.onerror = () => {
+    document.getElementById('faceDot').style.background = 'var(--danger)';
+    document.getElementById('faceStatus').textContent = '识别: 连接断开';
+  };
+}
+
+// ── 识别控制 ──────────────────────────────────────────────
+async function startFace() {
+  initFaceSSE();
+  const res = await fetch(BASE + '/face/start', {method:'POST'});
+  const d = await res.json();
+  if (d.success) {
+    document.getElementById('faceStartBtn').style.display = 'none';
+    document.getElementById('faceStopBtn').style.display  = 'block';
+    document.getElementById('faceDot').style.background   = 'var(--warning)';
+    document.getElementById('faceDot').style.animation    = 'pulse 2s infinite';
+    document.getElementById('faceStatus').textContent     = '识别: 启动中...';
+    toast('人脸识别已启动', 'success');
+  } else {
+    toast(d.message, 'error');
+  }
+}
+
+async function stopFace() {
+  const res = await fetch(BASE + '/face/stop', {method:'POST'});
+  const d = await res.json();
+  document.getElementById('faceStartBtn').style.display = 'block';
+  document.getElementById('faceStopBtn').style.display  = 'none';
+  document.getElementById('faceDot').style.background   = 'var(--text-muted)';
+  document.getElementById('faceDot').style.animation    = 'none';
+  document.getElementById('faceStatus').textContent     = '识别: 已停止';
+  document.getElementById('faceOverlay').innerHTML      = '';
+  toast('识别已停止', 'info');
+}
+
+function updateFaceNodeStatus(status) {
+  const dot = document.getElementById('faceDot');
+  if (status === 'running') {
+    dot.style.background = 'var(--success)';
+    dot.style.animation  = 'pulse 2s infinite';
+    document.getElementById('faceStatus').textContent = '识别: 运行中';
+  } else if (status === 'stopped') {
+    dot.style.background = 'var(--text-muted)';
+    dot.style.animation  = 'none';
+    document.getElementById('faceStatus').textContent = '识别: 已停止';
+  }
+}
+
+function showFaceOverlay(d) {
+  const overlay = document.getElementById('faceOverlay');
+  const color = d.known ? 'var(--success)' : 'var(--warning)';
+  const icon  = d.known ? '✅' : '❓';
+  overlay.innerHTML = `
+    <div style="background:rgba(0,0,0,.75);border:1px solid ${color};border-radius:6px;padding:8px 14px;font-size:13px;color:${color};backdrop-filter:blur(4px)">
+      ${icon} <b>${d.name}</b>
+      <span style="color:var(--text-muted);font-size:11px;margin-left:8px">${d.confidence.toFixed(1)}%</span>
+    </div>`;
+  clearTimeout(faceOverlayTimer);
+  faceOverlayTimer = setTimeout(() => { overlay.innerHTML = ''; }, 3000);
+}
+
+function addFaceHistory(d) {
+  faceHistoryList.unshift(d);
+  if (faceHistoryList.length > MAX_HISTORY) faceHistoryList.pop();
+  const el = document.getElementById('faceHistory');
+  el.innerHTML = faceHistoryList.map(r => {
+    const color = r.known ? 'var(--success)' : 'var(--warning)';
+    const time  = new Date(r.timestamp).toLocaleTimeString();
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg-dark);border-radius:4px;font-size:12px">
+      <span style="color:${color}">${r.known?'✅':'❓'} ${r.name}</span>
+      <span style="color:var(--text-muted)">${r.confidence.toFixed(1)}% · ${time}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── 训练控制 ──────────────────────────────────────────────
+function showTrainDialog() {
+  const modal = document.getElementById('trainModal');
+  modal.style.display = 'flex';
+  document.getElementById('trainNameInput').value = '';
+  setTimeout(() => document.getElementById('trainNameInput').focus(), 100);
+}
+
+function closeTrainModal() {
+  document.getElementById('trainModal').style.display = 'none';
+}
+
+async function confirmTrain() {
+  const name = document.getElementById('trainNameInput').value.trim();
+  if (!name) { toast('请输入姓名', 'warning'); return; }
+  closeTrainModal();
+  initFaceSSE();
+  const res = await fetch(BASE + '/face/train/start', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name})
+  });
+  const d = await res.json();
+  if (d.success) {
+    document.getElementById('trainStartBtn').style.display = 'none';
+    document.getElementById('trainStopBtn').style.display  = 'block';
+    document.getElementById('trainProgress').style.display = 'block';
+    document.getElementById('trainProgressText').textContent = '0/30';
+    document.getElementById('trainProgressBar').style.width = '0%';
+    toast('开始采集 ' + name + ' 的人脸', 'success');
+  } else {
+    toast(d.message, 'error');
+  }
+}
+
+async function stopTrain() {
+  await fetch(BASE + '/face/train/stop', {method:'POST'});
+  resetTrainUI();
+  toast('训练已中止', 'info');
+}
+
+function resetTrainUI() {
+  document.getElementById('trainStartBtn').style.display = 'block';
+  document.getElementById('trainStopBtn').style.display  = 'none';
+  document.getElementById('trainProgress').style.display = 'none';
+}
+
+function handleTrainEvent(d) {
+  if (d.status === 'progress') {
+    const parts = (d.detail || '0/30').split('/');
+    const cur   = parseInt(parts[0]) || 0;
+    const total = parseInt(parts[1]) || 30;
+    const pct   = Math.round(cur / total * 100);
+    document.getElementById('trainProgressText').textContent = d.detail;
+    document.getElementById('trainProgressBar').style.width  = pct + '%';
+  } else if (d.status === 'done') {
+    resetTrainUI();
+    toast('✅ ' + d.name + ' 训练完成！', 'success');
+  } else if (d.status === 'error') {
+    resetTrainUI();
+    toast('训练出错: ' + d.detail, 'error');
+  }
+}
+
+// 键盘回车确认训练
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('trainModal').style.display === 'flex') {
+    confirmTrain();
+  }
+  if (e.key === 'Escape') closeTrainModal();
+});
+</script>
+
+<!-- 训练姓名输入弹窗 -->
+<div id="trainModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:28px;width:320px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
+    <div style="font-size:15px;font-weight:bold;color:var(--accent);margin-bottom:16px">🎓 输入训练人员姓名</div>
+    <input id="trainNameInput" type="text" class="route-input" placeholder="例如：张三" style="width:100%;margin-bottom:16px">
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="confirmTrain()">确认开始</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeTrainModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 启动 ──────────────────────────────────────────────────
+fetchData();
+setInterval(fetchData, 3000);
+</script>
+</body>
+</html>

@@ -45,53 +45,8 @@ public class MqttRobotSubscriber {
 
     @PostConstruct
     public void subscribe() {
-        try {
-            // 生成阿里云认证参数
-            connectOptions = new MqttConnectOptions();
-            connectOptions.setCleanSession(true);
-            connectOptions.setConnectionTimeout(10);
-            connectOptions.setKeepAliveInterval(60);
-            connectOptions.setAutomaticReconnect(true);
-
-            // 动态生成连接参数
-            updateConnectionParams();
-
-            client = new MqttClient(MQTT_BROKER, clientId, new MemoryPersistence());
-
-            client.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    logger.error("阿里云MQTT连接丢失: {}", cause.getMessage());
-                    // 尝试重新连接
-                    tryReconnect();
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage message) {
-                    try {
-                        String payload = new String(message.getPayload(), StandardCharsets.UTF_8);
-                        logger.info("收到阿里云MQTT消息，主题: {}", topic);
-                        logger.info("原始数据: {}", payload);
-                        processRobotData(payload);
-                    } catch (Exception e) {
-                        logger.error("处理MQTT消息失败: {}", e.getMessage());
-                    }
-                }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    // 不需要实现
-                }
-            });
-
-            client.connect(connectOptions);
-            client.subscribe(SUB_TOPIC);
-            logger.info("阿里云MQTT订阅成功: {}, 主题: {}", MQTT_BROKER, SUB_TOPIC);
-
-        } catch (MqttException e) {
-            logger.error("阿里云MQTT连接失败: {}", e.getMessage());
-            e.printStackTrace();
-        }
+        // 已切换为 Jetson 直接 HTTP POST 方案，不再使用阿里云MQTT
+        logger.info("MqttRobotSubscriber: 阿里云MQTT已禁用，使用 /api/robot-data/push 接收数据");
     }
 
     /**
@@ -367,13 +322,6 @@ public class MqttRobotSubscriber {
 
     @PreDestroy
     public void cleanup() {
-        try {
-            if (client != null && client.isConnected()) {
-                client.disconnect();
-                logger.info("阿里云MQTT连接已关闭");
-            }
-        } catch (MqttException e) {
-            logger.error("关闭阿里云MQTT连接失败: {}", e.getMessage());
-        }
+        // 阿里云MQTT已禁用，无需清理
     }
 }

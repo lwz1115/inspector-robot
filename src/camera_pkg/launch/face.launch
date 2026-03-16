@@ -1,19 +1,27 @@
 <?xml version="1.0"?>
 <launch>
-    <!-- 启动摄像头节点 -->
-    <node name="camera_node" pkg="camera_pkg" type="camera_node.py" output="screen">
-        <!-- 降低画质参数配置 -->
-        <param name="resolution_width" type="int" value="640" />
-        <param name="resolution_height" type="int" value="480" />
-        <param name="frame_rate" type="int" value="15" />
-        <param name="quality" type="int" value="50" />
-        <!-- 如果是MJPG格式，可以设置较低的压缩质量 -->
-        <param name="jpeg_quality" type="int" value="30" />
-    </node>
 
-    <!-- 启动人脸识别节点 -->
-    <node name="face_node" pkg="camera_pkg" type="face_node.py" output="screen" required="true">
-        <!-- 人脸识别节点也可以相应调整处理参数 -->
-        <param name="processing_scale" type="double" value="0.5" />
-    </node>
+  <!-- ① 摄像头节点 -->
+  <node name="camera_node" pkg="camera_pkg" type="camera_node.py"
+        output="screen" respawn="true" respawn_delay="3">
+    <param name="resolution_width"  value="640"/>
+    <param name="resolution_height" value="480"/>
+    <param name="frame_rate"        value="15"/>
+  </node>
+
+  <!-- ② web_video_server：将 /image 暴露为 MJPEG HTTP 流 -->
+  <node name="web_video_server" pkg="web_video_server" type="web_video_server"
+        output="screen" respawn="true" respawn_delay="3">
+    <param name="port"    value="8081"/>
+    <param name="address" value="0.0.0.0"/>
+  </node>
+
+  <!-- ③ 人脸识别节点（由 /face_cmd 控制启停） -->
+  <node name="face_node" pkg="camera_pkg" type="face_node.py"
+        output="screen" respawn="true" respawn_delay="5"/>
+
+  <!-- ④ 人脸训练节点（由 /face_train_cmd 控制） -->
+  <node name="face_trainer" pkg="camera_pkg" type="face_trainer.py"
+        output="screen" respawn="true" respawn_delay="5"/>
+
 </launch>

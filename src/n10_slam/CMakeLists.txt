@@ -27,12 +27,6 @@ install(TARGETS odometry_node
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-# 安装Python脚本（保留 jetbot_serial_control，删除已替换的节点）
-catkin_install_python(PROGRAMS
-  scripts/jetbot_serial_control.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 # 安装launch文件
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
