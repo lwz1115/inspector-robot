@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import serial
@@ -14,7 +14,7 @@ class BatteryMonitor:
         self.ser = None
         self.FRAME_HEADER = 0x7B
         self.FRAME_TAIL = 0x7D
-        self.FRAME_SIZE = 24
+        self.FRAME_SIZE = 30
         self.low_voltage_count = 0
         self.LOW_VOLTAGE_THRESHOLD = 10.85
         self.CONSECUTIVE_LOW_COUNT = 5  # 连续5次低电压才关机
@@ -52,9 +52,16 @@ class BatteryMonitor:
             return None
             
         # 检查帧头和帧尾
-        if data[0] != self.FRAME_HEADER or data[23] != self.FRAME_TAIL:
+        if data[0] != self.FRAME_HEADER or data[29] != self.FRAME_TAIL:
             return None
         
+        # 校验字节验证
+        checksum = 0
+        for b in data[:26]:
+            checksum ^= b
+        if checksum != data[26]:
+            return None
+
         # 提取电压数据 (字节20-21)
         voltage_high = data[20]
         voltage_low = data[21]
@@ -97,10 +104,10 @@ class BatteryMonitor:
                             continue
                         
                         frame = buffer[:self.FRAME_SIZE]
-                        buffer = buffer[self.FRAME_SIZE:]
                         
                         voltage = self.parse_voltage(frame)
                         if voltage is not None:
+                            buffer = buffer[self.FRAME_SIZE:]
                             print("当前电池电压: %.2fV" % voltage)
                             
                             # 检查电压是否过低
@@ -113,6 +120,8 @@ class BatteryMonitor:
                                     return
                             else:
                                 self.low_voltage_count = 0  # 重置计数器
+                        else:
+                            buffer.pop(0)  # 解析失败，丢弃1字节重新对齐
                 else:
                     time.sleep(0.1)
                     

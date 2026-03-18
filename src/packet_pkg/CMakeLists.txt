@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(packet_pkg)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
+  roscpp
   rospy
   sensor_msgs
   std_msgs
   message_generation
+  serial
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,21 +51,19 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES packet_pkg
-  CATKIN_DEPENDS geometry_msgs rospy sensor_msgs std_msgs message_runtime
-#  DEPENDS system_lib
+  CATKIN_DEPENDS geometry_msgs roscpp rospy sensor_msgs std_msgs message_runtime
 )
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
+
+add_executable(serial_node src/serial_node.cpp)
+target_link_libraries(serial_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
@@ -75,7 +73,6 @@ include_directories(
 catkin_install_python(PROGRAMS
   scripts/packet_node.py
   scripts/jetbot_keyboard.py
-  scripts/serial_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

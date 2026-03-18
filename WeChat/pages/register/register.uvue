@@ -1,0 +1,443 @@
+<template>
+    <view class="container">
+        <!-- 系统标题 -->
+        <view class="header">
+            <text class="title">物联网设备管理系统</text>
+        </view>
+
+        <!-- 注册表单 -->
+        <view class="register-form">
+            <view class="form-title">
+                <text class="title-text">用户注册</text>
+            </view>
+            
+            <!-- 用户名输入 -->
+            <view class="input-group">
+                <view class="input-label">
+                    <text>用户名</text>
+                </view>
+                <view class="input-container">
+                    <input 
+                        class="input" 
+                        type="text" 
+                        placeholder="请输入用户名"
+                        v-model="username"
+                        placeholder-class="placeholder"
+                        maxlength="20"
+                    />
+                </view>
+            </view>
+
+            <!-- 密码输入 -->
+            <view class="input-group">
+                <view class="input-label">
+                    <text>密码</text>
+                </view>
+                <view class="input-container">
+                    <input 
+                        class="input" 
+                        :type="showPassword ? 'text' : 'password'" 
+                        placeholder="请输入密码（6-15位字母数字）"
+                        v-model="password"
+                        placeholder-class="placeholder"
+                        maxlength="15"
+                    />
+                    <view class="password-toggle" @click="togglePassword">
+                        <text class="toggle-icon">{{ showPassword ? '🙈' : '👁' }}</text>
+                    </view>
+                </view>
+            </view>
+
+            <!-- 确认密码 -->
+            <view class="input-group">
+                <view class="input-label">
+                    <text>确认密码</text>
+                </view>
+                <view class="input-container">
+                    <input 
+                        class="input" 
+                        :type="showConfirmPassword ? 'text' : 'password'" 
+                        placeholder="请再次输入密码"
+                        v-model="confirmPassword"
+                        placeholder-class="placeholder"
+                        maxlength="15"
+                    />
+                    <view class="password-toggle" @click="toggleConfirmPassword">
+                        <text class="toggle-icon">{{ showConfirmPassword ? '🙈' : '👁' }}</text>
+                    </view>
+                </view>
+            </view>
+
+            <!-- 手机号输入 -->
+            <view class="input-group">
+                <view class="input-label">
+                    <text>手机号</text>
+                </view>
+                <view class="input-container">
+                    <input 
+                        class="input" 
+                        type="number" 
+                        placeholder="请输入手机号"
+                        v-model="phone"
+                        placeholder-class="placeholder"
+                        maxlength="11"
+                    />
+                </view>
+            </view>
+
+            <!-- 昵称输入 -->
+            <view class="input-group">
+                <view class="input-label">
+                    <text>昵称</text>
+                </view>
+                <view class="input-container">
+                    <input 
+                        class="input" 
+                        type="text" 
+                        placeholder="请输入昵称"
+                        v-model="nickname"
+                        placeholder-class="placeholder"
+                        maxlength="20"
+                    />
+                </view>
+            </view>
+
+            <!-- 用户协议 -->
+            <view class="form-options">
+                <view class="agreement" @click="toggleAgreement">
+                    <view class="checkbox" :class="{checked: agreed}">
+                        <text class="checkmark" v-if="agreed">✓</text>
+                    </view>
+                    <text class="option-text">同意</text>
+                    <text class="link" @click.stop="showAgreement">用户协议</text>
+                </view>
+            </view>
+
+            <!-- 注册按钮 -->
+            <view class="register-button" @click="handleRegister">
+                <text class="register-button-text">{{ loading ? '注册中...' : '注册' }}</text>
+            </view>
+
+            <!-- 登录链接 -->
+            <view class="login-link">
+                <text class="login-text">已有账号？</text>
+                <text class="link" @click="goToLogin">立即登录</text>
+            </view>
+        </view>
+
+        <!-- 底部版权信息 -->
+        <view class="footer">
+            <text class="copyright">©2025 南工物联2431 版权所有</text>
+            <view class="about-link" @click="goToAbout">
+                <text class="link">关于我们</text>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+export default {
+    data() {
+        return {
+            username: '',
+            password: '',
+            confirmPassword: '',
+            phone: '',
+            nickname: '',
+            agreed: false,
+            showPassword: false,
+            showConfirmPassword: false,
+            loading: false,
+            baseUrl: 'http://localhost:8080'
+        }
+    },
+    methods: {
+        // 处理注册
+        async handleRegister() {
+            if (!this.validateForm()) {
+                return;
+            }
+            
+            this.loading = true;
+            uni.showLoading({
+                title: '注册中...',
+                mask: true
+            });
+            
+            try {
+                console.log('开始注册请求...');
+                
+                // 使用 application/x-www-form-urlencoded 格式
+                const response = await uni.request({
+                    url: `${this.baseUrl}/api/auth/register`,
+                    method: 'POST',
+                    data: {
+                        username: this.username.trim(),
+                        password: this.password,
+                        phone: this.phone.trim(),
+                        nickname: this.nickname.trim() || this.username.trim()
+                    },
+                    header: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    timeout: 10000
+                });
+                
+                uni.hideLoading();
+                this.loading = false;
+                
+                console.log('注册响应:', response);
+                
+                if (response.statusCode === 200) {
+                    const result = response.data;
+                    
+                    if (result.success) {
+                        console.log('注册成功:', result);
+                        
+                        uni.showToast({
+                            title: '注册成功！',
+                            icon: 'success',
+                            duration: 2000
+                        });
+                        
+                        // 注册成功后跳转到登录页面
+                        setTimeout(() => {
+                            uni.redirectTo({
+                                url: '/pages/index/index?username=' + encodeURIComponent(this.username)
+                            });
+                        }, 2000);
+                        
+                    } else {
+                        console.log('注册失败:', result.message);
+                        uni.showToast({
+                            title: result.message || '注册失败',
+                            icon: 'none',
+                            duration: 3000
+                        });
+                    }
+                } else {
+                    console.error('HTTP错误:', response.statusCode);
+                    uni.showToast({
+                        title: `服务器错误: ${response.statusCode}`,
+                        icon: 'none',
+                        duration: 3000
+                    });
+                }
+                
+            } catch (error) {
+                uni.hideLoading();
+                this.loading = false;
+                console.error('注册请求失败:', error);
+                
+                let errorMessage = '注册失败，请重试';
+                
+                if (error.errMsg && error.errMsg.includes('timeout')) {
+                    errorMessage = '请求超时，请检查网络连接';
+                } else if (error.errMsg && error.errMsg.includes('fail')) {
+                    errorMessage = '无法连接到服务器，请检查后端服务是否启动';
+                }
+                
+                uni.showToast({
+                    title: errorMessage,
+                    icon: 'none',
+                    duration: 3000
+                });
+            }
+        },
+        
+        // 跳转到登录页面
+        goToLogin() {
+            uni.redirectTo({
+                url: '/pages/index/index'
+            });
+        }
+    }
+}
+</script>
+
+<style scoped>
+.container {
+    flex: 1;
+    background: #f5f5f5;
+}
+
+/* 系统标题 */
+.header {
+    padding: 60rpx 0 30rpx 0;
+    align-items: center;
+    background: #f5f5f5;
+}
+
+.title {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+}
+
+/* 注册表单 */
+.register-form {
+    margin: 0 40rpx;
+    background: #ffffff;
+    border-radius: 20rpx;
+    padding: 50rpx 40rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+    margin-top: 20rpx;
+}
+
+.form-title {
+    margin-bottom: 50rpx;
+    align-items: center;
+}
+
+.title-text {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333333;
+}
+
+/* 输入框组 */
+.input-group {
+    margin-bottom: 40rpx;
+}
+
+.input-label {
+    margin-bottom: 20rpx;
+}
+
+.input-label text {
+    font-size: 28rpx;
+    color: #333333;
+    font-weight: 500;
+}
+
+.input-container {
+    border: 2rpx solid #e0e0e0;
+    border-radius: 12rpx;
+    padding: 24rpx;
+    background: #f8f9fa;
+    flex-direction: row;
+    align-items: center;
+}
+
+.input {
+    font-size: 28rpx;
+    color: #333333;
+    flex: 1;
+}
+
+.placeholder {
+    color: #999999;
+    font-size: 28rpx;
+}
+
+/* 密码显示切换 */
+.password-toggle {
+    padding: 10rpx;
+    margin-left: 20rpx;
+}
+
+.toggle-icon {
+    font-size: 32rpx;
+}
+
+/* 表单选项 */
+.form-options {
+    margin-bottom: 50rpx;
+}
+
+.agreement {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.checkbox {
+    width: 32rpx;
+    height: 32rpx;
+    border: 2rpx solid #cccccc;
+    border-radius: 6rpx;
+    margin-right: 16rpx;
+    justify-content: center;
+    align-items: center;
+}
+
+.checkbox.checked {
+    background: #1890ff;
+    border-color: #1890ff;
+}
+
+.checkmark {
+    color: #ffffff;
+    font-size: 24rpx;
+    font-weight: bold;
+}
+
+.option-text {
+    font-size: 26rpx;
+    color: #666666;
+    margin-right: 10rpx;
+}
+
+.link {
+    color: #1890ff;
+    font-size: 26rpx;
+}
+
+/* 注册按钮 */
+.register-button {
+    background: #1890ff;
+    border-radius: 12rpx;
+    padding: 28rpx;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30rpx;
+}
+
+.register-button:active {
+    opacity: 0.9;
+    background: #096dd9;
+}
+
+.register-button-text {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* 登录链接 */
+.login-link {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20rpx;
+}
+
+.login-text {
+    font-size: 26rpx;
+    color: #666666;
+    margin-right: 10rpx;
+}
+
+/* 底部版权 */
+.footer {
+    margin-top: 60rpx;
+    padding: 40rpx 0;
+    align-items: center;
+    background: #f5f5f5;
+}
+
+.copyright {
+    font-size: 24rpx;
+    color: #666666;
+    margin-bottom: 20rpx;
+}
+
+.about-link {
+    padding: 10rpx 20rpx;
+}
+
+.about-link .link {
+    font-size: 24rpx;
+    color: #1890ff;
+}
+</style>

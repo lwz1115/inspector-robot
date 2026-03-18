@@ -2,9 +2,9 @@
 #define __SYSTEM_H
 
 // Refer to all header files you need
-//ÒıÓÃËùÓĞĞèÒªÓÃµ½µÄÍ·ÎÄ¼ş
+//å¼•ç”¨æ‰€æœ‰éœ€è¦ç”¨åˆ°çš„å¤´æ–‡ä»¶
 #include "FreeRTOSConfig.h"
-//FreeRTOSÏà¹ØÍ·ÎÄ¼ş 
+//FreeRTOSç›¸å…³å¤´æ–‡ä»¶ 
 //FreeRTOS related header files
 #include "FreeRTOS.h"
 #include "stm32f4xx.h"
@@ -13,7 +13,7 @@
 #include "timers.h"
 #include "semphr.h"
 //The associated header file for the peripheral 
-//ÍâÉèµÄÏà¹ØÍ·ÎÄ¼ş
+//å¤–è®¾ç›¸å…³å¤´æ–‡ä»¶
 #include "sys.h"
 #include "delay.h"
 #include "usart.h"
@@ -36,7 +36,7 @@
 
 
 // Enumeration of car types
-//Ğ¡³µĞÍºÅµÄÃ¶¾Ù¶¨Òå
+//å°è½¦å‹å·çš„æšä¸¾å®šä¹‰
 typedef enum 
 {
 	Mec_Car = 0, 
@@ -48,18 +48,18 @@ typedef enum
 } CarMode;
 
 //Motor speed control related parameters of the structure
-//µç»úËÙ¶È¿ØÖÆÏà¹Ø²ÎÊı½á¹¹Ìå
+//ç”µæœºé€Ÿåº¦æ§åˆ¶ç›¸å…³å‚æ•°ç»“æ„ä½“
 typedef struct  
 {
-	float Encoder;     //Read the real time speed of the motor by encoder //±àÂëÆ÷ÊıÖµ£¬¶ÁÈ¡µç»úÊµÊ±ËÙ¶È
-	float Motor_Pwm;   //Motor PWM value, control the real-time speed of the motor //µç»úPWMÊıÖµ£¬¿ØÖÆµç»úÊµÊ±ËÙ¶È
-	float Target;      //Control the target speed of the motor //µç»úÄ¿±êËÙ¶ÈÖµ£¬¿ØÖÆµç»úÄ¿±êËÙ¶È
-	float Velocity_KP; //Speed control PID parameters //ËÙ¶È¿ØÖÆPID²ÎÊı
-	float	Velocity_KI; //Speed control PID parameters //ËÙ¶È¿ØÖÆPID²ÎÊı
+	float Encoder;     //Read the real time speed of the motor by encoder //ç¼–ç å™¨æ•°å€¼ï¼Œè¯»å–ç”µæœºå®æ—¶é€Ÿåº¦
+	float Motor_Pwm;   //Motor PWM value, control the real-time speed of the motor //ç”µæœºPWMå€¼ï¼Œæ§åˆ¶ç”µæœºå®æ—¶é€Ÿåº¦
+	float Target;      //Control the target speed of the motor //ç”µæœºç›®æ ‡é€Ÿåº¦å€¼ï¼Œæ§åˆ¶ç”µæœºç›®æ ‡é€Ÿåº¦
+	float Velocity_KP; //Speed control PID parameters //é€Ÿåº¦æ§åˆ¶PIDå‚æ•°
+	float	Velocity_KI; //Speed control PID parameters //é€Ÿåº¦æ§åˆ¶PIDå‚æ•°
 }Motor_parameter;
 
 //Smoothed the speed of the three axes
-//Æ½»¬´¦ÀíºóµÄÈıÖáËÙ¶È
+//å¹³æ»‘å¤„ç†ä¸‰è½´ç›®æ ‡é€Ÿåº¦
 typedef struct  
 {
 	float VX;
@@ -69,7 +69,7 @@ typedef struct
 
 /****** external variable definition. When system.h is referenced in other C files, 
         other C files can also use the variable defined by system.c           ******/
-/****** Íâ²¿±äÁ¿¶¨Òå£¬µ±ÆäËücÎÄ¼şÒıÓÃsystem.hÊ±£¬Ò²¿ÉÒÔÊ¹ÓÃsystem.c¶¨ÒåµÄ±äÁ¿ ******/
+/****** å¤–éƒ¨å˜é‡å£°æ˜ï¼Œå½“å…¶ä»–cæ–‡ä»¶å¼•ç”¨system.hæ—¶ï¼Œä¹Ÿå¯ä»¥ä½¿ç”¨system.cå®šä¹‰çš„å˜é‡ ******/
 extern u8 Flag_Stop;
 extern int Divisor_Mode;
 extern u8 Car_Mode;
@@ -85,6 +85,7 @@ extern float Wheel_spacing;
 extern float Axle_spacing; 
 extern float Omni_turn_radiaus; 
 extern u8 PS2_ON_Flag, APP_ON_Flag, Remote_ON_Flag, CAN_ON_Flag, Usart1_ON_Flag, Usart5_ON_Flag;
+extern u8 ROS_Lock_Flag;
 extern u8 Flag_Left, Flag_Right, Flag_Direction, Turn_Flag; 
 extern u8 PID_Send;                                            										                 
 extern float PS2_LX,PS2_LY,PS2_RX,PS2_RY,PS2_KEY;
@@ -93,12 +94,12 @@ extern long int ErrorCode;
 
 void systemInit(void);
 
-/***Macros define***/ /***ºê¶¨Òå***/
+/***Macros define***/ /***å®å®šä¹‰***/
 //After starting the car (1000/100Hz =10) for seconds, it is allowed to control the car to move
-//¿ª»ú(1000/100hz=10)Ãëºó²ÅÔÊĞí¿ØÖÆĞ¡³µ½øĞĞÔË¶¯
+//å¯åŠ¨åï¼ˆ1000/100hz=10ï¼‰ç§’å†…ä¸å…è®¸æ§åˆ¶å°è½¦è¿›è¡Œè¿åŠ¨
 #define CONTROL_DELAY		1000
 //The number of robot types to determine the value of Divisor_Mode. There are currently 6 car types
-//»úÆ÷ÈËĞÍºÅÊıÁ¿£¬¾ö¶¨Divisor_ModeµÄÖµ£¬Ä¿Ç°ÓĞ6ÖÖĞ¡³µÀàĞÍ
+//æœºå™¨äººå‹å·æ•°é‡ï¼Œç”¨äºç¡®å®šDivisor_Modeçš„å€¼ï¼Œç›®å‰æœ‰6ç§å°è½¦ç±»å‹
 #define CAR_NUMBER    6      
 #define RATE_1_HZ		  1
 #define RATE_5_HZ		  5
@@ -111,10 +112,10 @@ void systemInit(void);
 #define RATE_250_HZ 	250
 #define RATE_500_HZ 	500
 #define RATE_1000_HZ 	1000
-/***Macros define***/ /***ºê¶¨Òå***/
+/***Macros define***/ /***å®å®šä¹‰***/
 
 //C library function related header file
-//C¿âº¯ÊıµÄÏà¹ØÍ·ÎÄ¼ş
+//Cåº“å‡½æ•°ç›¸å…³å¤´æ–‡ä»¶
 #include <stdio.h> 
 #include <stdint.h>
 #include <stdlib.h>

@@ -1,0 +1,831 @@
+<template>
+  <view class="page" 
+        :style="{ 
+          transform: 'translateX(' + translateX + 'px)', 
+          transition: isTouching ? 'none' : 'transform 0.3s ease' 
+        }"
+        @touchstart="onTouchStart" 
+        @touchmove="onTouchMove" 
+        @touchend="onTouchEnd">
+    
+    <!-- 整个页面内容包装器，用于整体下拉弹性 -->
+    <view class="content-wrapper" :style="{ 
+      transform: 'translateY(' + pullDownDistance + 'px)',
+      transition: isPulling ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    }">
+      <!-- 顶部背景 -->
+      <view class="top-bg" :style="{ 
+        height: bgHeight + 'rpx'
+      }">
+        <!-- 头像部分 -->
+        <view class="head-box">
+          <view class="avatar-section" @click="showAvatarSelector">
+            <image class="head-img" :src="userAvatar" mode="aspectFill"></image>
+          </view>
+          <view class="user-info">
+            <text class="tip">{{isLoggedIn ? username || '欢迎回来' : '当前未登录，请登录！'}}</text>
+            <text class="user-id" v-if="userId">ID: {{userId}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 主内容区域 - 菜单卡片 -->
+      <view class="box">
+        <!-- 菜单列表 -->
+        <view class="menu-section">
+          <view class="row" @click="goToPage('device')">
+            <view class="row-content">
+              <text class="icon">📱</text>
+              <text class="text">我的设备</text>
+              <text class="arrow">》</text>
+            </view>
+          </view>
+          
+          <view class="row" @click="goToPage('about')">
+            <view class="row-content">
+              <text class="icon">ℹ️</text>
+              <text class="text">关于我们</text>
+              <text class="arrow">》</text>
+            </view>
+          </view>
+          
+          <!-- 分享按钮 - 使用view包装 -->
+          <view class="share-wrapper">
+            <button open-type="share" class="share-btn">
+              <view class="row-content">
+                <text class="icon">🔗</text>
+                <text class="text">分享好友</text>
+                <text class="arrow">》</text>
+              </view>
+            </button>
+          </view>
+          
+          <view class="row" @click="contactService">
+            <view class="row-content">
+              <text class="icon">💬</text>
+              <text class="text">在线客服</text>
+              <text class="arrow">》</text>
+            </view>
+          </view>
+          
+          <view class="row" @click="goToFeedback">
+            <view class="row-content">
+              <text class="icon">📝</text>
+              <text class="text">匿名反馈</text>
+              <text class="arrow">》</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 底部按钮 -->
+      <view class="end">
+        <view class="row action-btn" v-if="isLoggedIn" @click="logout">
+          <view class="row-content">
+            <text class="icon">🚪</text>
+            <text class="text">退出登录</text>
+          </view>
+        </view>
+        
+        <view class="row action-btn login-btn" v-else @click="goToLogin">
+          <view class="row-content">
+            <text class="icon">🔑</text>
+            <text class="text">立即登录</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="footer">
+        <text>©网络小程序个人中心 (Naval)</text>
+      </view>
+    </view>
+
+    <!-- 头像选择弹窗 -->
+    <view class="avatar-modal" v-if="showAvatarModal" @click="closeAvatarModal">
+      <view class="modal-content" @click.stop>
+        <view class="modal-header">
+          <text>选择头像</text>
+          <text class="close" @click="closeAvatarModal">×</text>
+        </view>
+        <view class="user-info-modal">
+          <text class="username">{{username}}</text>
+          <text class="user-id-modal" v-if="userId">ID: {{userId}}</text>
+        </view>
+        <view class="avatar-grid">
+          <view 
+            class="avatar-option" 
+            v-for="(avatar, index) in avatarList" 
+            :key="index"
+            @click="selectAvatar(avatar)"
+          >
+            <image 
+              class="avatar-img" 
+              :src="avatar" 
+              mode="aspectFill"
+              :class="{selected: userAvatar === avatar}"
+              @error="handleAvatarError(index)"
+            />
+            <text class="avatar-index">{{index + 1}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      username: '',
+      userAvatar: '/static/logo.png',
+      userId: null,
+      isLoggedIn: false,
+      showAvatarModal: false,
+      avatarList: [
+        '/static/hear1.jpg',
+        '/static/hear2.jpg',
+        '/static/hear3.jpg',
+        '/static/hear4.jpg',
+        '/static/hear5.jpg',
+        '/static/hear6.jpg',
+        '/static/hear7.jpg',
+        '/static/hear8.jpg'
+      ],
+      avatarLoadError: {},
+      initialAvatarIndex: 0,
+      
+      // 滑动相关数据
+      translateX: 0,
+      startX: 0,
+      startY: 0,
+      isTouching: false,
+      windowWidth: 375,
+      swipeThreshold: 50,
+      
+      // 下拉相关数据
+      pullDownDistance: 0,
+      isPulling: false,
+      bgHeight: 320,
+      originalBgHeight: 320,
+      maxPullDistance: 150, // 增加最大下拉距离
+      startPullY: 0,
+      pullBackTimer: null
+    }
+  },
+  
+  onLoad() {
+    this.loadUserInfo();
+    this.getWindowWidth();
+  },
+  
+  onShow() {
+    this.loadUserInfo();
+    this.resetSwipe();
+    this.syncTabBar();
+  },
+  
+  onUnload() {
+    // 清理定时器
+    if (this.pullBackTimer) {
+      clearTimeout(this.pullBackTimer);
+    }
+  },
+  
+  methods: {
+    getWindowWidth() {
+      try {
+        const systemInfo = uni.getSystemInfoSync();
+        this.windowWidth = systemInfo.windowWidth || 375;
+      } catch (error) {
+        this.windowWidth = 375;
+      }
+    },
+    
+    syncTabBar() {
+      try {
+        uni.setTabBarItem({ index: 2, selected: true });
+      } catch (error) {}
+    },
+    
+    onTouchStart(e) {
+      this.startX = e.touches[0].clientX;
+      this.startY = e.touches[0].clientY;
+      this.startPullY = this.startY;
+      this.isTouching = true;
+    },
+    
+    onTouchMove(e) {
+      if (!this.isTouching) return;
+      
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = currentX - this.startX;
+      const diffY = currentY - this.startY;
+      
+      // 整个页面都可以下拉
+      if (diffY > 0) {
+        // 阻止默认滚动行为
+        e.preventDefault();
+        
+        this.isPulling = true;
+        
+        // 计算下拉距离，有阻尼效果
+        let pullDistance = diffY * 0.6; // 增加灵敏度
+        
+        // 增加弹性效果：超过一定距离后阻力增大
+        if (pullDistance > this.maxPullDistance * 0.7) {
+          pullDistance = this.maxPullDistance * 0.7 + (pullDistance - this.maxPullDistance * 0.7) * 0.3;
+        }
+        
+        if (pullDistance > this.maxPullDistance) {
+          pullDistance = this.maxPullDistance + (pullDistance - this.maxPullDistance) * 0.2;
+        }
+        
+        this.pullDownDistance = Math.min(pullDistance, this.maxPullDistance * 1.5);
+        
+        // 动态调整背景高度，增加视觉弹性效果
+        this.bgHeight = this.originalBgHeight + (this.pullDownDistance * 1.5);
+        return;
+      }
+      
+      // 滑动切换页面
+      if (Math.abs(diffY) > Math.abs(diffX) * 2) return;
+      
+      if (diffX > 0) {
+        this.translateX = Math.min(diffX, this.windowWidth * 0.3);
+      }
+    },
+    
+    onTouchEnd(e) {
+      if (this.isPulling) {
+        // 添加回弹动画
+        this.isPulling = false;
+        
+        // 清理之前的定时器
+        if (this.pullBackTimer) {
+          clearTimeout(this.pullBackTimer);
+        }
+        
+        // 使用setTimeout实现回弹动画
+        const startTime = Date.now();
+        const startPull = this.pullDownDistance;
+        const duration = 600; // 增加动画时间
+        
+        const animateBack = () => {
+          const currentTime = Date.now();
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // 使用缓动函数实现弹簧效果
+          const easeOutElastic = (t) => {
+            const p = 0.3;
+            return Math.pow(2, -10 * t) * Math.sin((t - p / 4) * (2 * Math.PI) / p) + 1;
+          };
+          
+          const easedProgress = easeOutElastic(progress);
+          this.pullDownDistance = startPull * (1 - easedProgress);
+          this.bgHeight = this.originalBgHeight + (this.pullDownDistance * 1.5);
+          
+          if (progress < 1) {
+            this.pullBackTimer = setTimeout(animateBack, 16);
+          } else {
+            this.pullDownDistance = 0;
+            this.bgHeight = this.originalBgHeight;
+          }
+        };
+        
+        animateBack();
+        return;
+      }
+      
+      this.isTouching = false;
+      
+      const endX = e.changedTouches[0].clientX;
+      const diffX = endX - this.startX;
+      
+      if (diffX > this.swipeThreshold) {
+        this.handleSwipeRight();
+      } else {
+        this.resetSwipe();
+      }
+    },
+    
+    handleSwipeRight() {
+      this.translateX = this.windowWidth;
+      
+      setTimeout(() => {
+        uni.switchTab({
+          url: '/pages/navigation/navigation',
+          success: () => {
+            uni.setTabBarItem({ index: 1, selected: true });
+          }
+        });
+      }, 150);
+    },
+    
+    resetSwipe() {
+      this.translateX = 0;
+    },
+    
+    loadUserInfo() {
+      try {
+        const username = uni.getStorageSync('currentUsername');
+        const userId = uni.getStorageSync('userId');
+        
+        if (username && userId) {
+          this.username = username;
+          this.userId = userId;
+          this.isLoggedIn = true;
+          this.loadUserAvatar();
+        } else {
+          this.resetToDefault();
+        }
+      } catch (error) {
+        this.resetToDefault();
+      }
+    },
+    
+    loadUserAvatar() {
+      try {
+        let avatarPath = uni.getStorageSync(`userAvatar_${this.userId}`);
+        
+        if (avatarPath) {
+          this.userAvatar = avatarPath;
+          this.initialAvatarIndex = this.getAvatarIndexForUser();
+          return;
+        }
+        
+        const avatarIndex = this.getAvatarIndexForUser();
+        this.initialAvatarIndex = avatarIndex;
+        avatarPath = this.avatarList[avatarIndex];
+        
+        uni.setStorageSync(`userAvatar_${this.userId}`, avatarPath);
+        this.userAvatar = avatarPath;
+        
+      } catch (error) {
+        this.userAvatar = '/static/logo.png';
+      }
+    },
+    
+    getAvatarIndexForUser() {
+      if (!this.userId) return 0;
+      
+      try {
+        const userIdStr = this.userId.toString();
+        let hash = 0;
+        for (let i = 0; i < userIdStr.length; i++) {
+          const char = userIdStr.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash;
+        }
+        return Math.abs(hash) % this.avatarList.length;
+      } catch (error) {
+        return 0;
+      }
+    },
+    
+    showAvatarSelector() {
+      if (!this.isLoggedIn) {
+        uni.showToast({ title: '请先登录', icon: 'none' });
+        setTimeout(() => { uni.navigateTo({ url: '/pages/index/index' }); }, 1500);
+        return;
+      }
+      this.showAvatarModal = true;
+    },
+    
+    closeAvatarModal() {
+      this.showAvatarModal = false;
+    },
+    
+    selectAvatar(avatarPath) {
+      if (!this.isLoggedIn || !this.userId) {
+        uni.showToast({ title: '用户信息异常', icon: 'error' });
+        return;
+      }
+      
+      this.userAvatar = avatarPath;
+      uni.setStorageSync(`userAvatar_${this.userId}`, avatarPath);
+      uni.showToast({ title: '头像已更换', icon: 'success' });
+      this.closeAvatarModal();
+    },
+    
+    handleAvatarError(index) {
+      this.$set(this.avatarLoadError, index, true);
+    },
+    
+    goToPage(page) {
+      if (!this.isLoggedIn) {
+        uni.showToast({ title: '请先登录', icon: 'none' });
+        setTimeout(() => { uni.navigateTo({ url: '/pages/index/index' }); }, 1500);
+        return;
+      }
+      
+      const routes = {
+        'device': '/pages/device/device',
+        'about': '/pages/about/about'
+      };
+      
+      if (routes[page]) {
+        uni.navigateTo({ url: routes[page] });
+      }
+    },
+    
+    contactService() {
+      uni.showToast({ title: '在线客服功能', icon: 'none' });
+    },
+    
+    goToFeedback() {
+      uni.showToast({ title: '匿名反馈功能', icon: 'none' });
+    },
+    
+    goToLogin() {
+      uni.navigateTo({ url: '/pages/index/index' });
+    },
+    
+    logout() {
+      uni.showModal({
+        title: '提示',
+        content: '确定要退出登录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            uni.removeStorageSync('token');
+            uni.removeStorageSync('currentUsername');
+            uni.removeStorageSync('userId');
+            uni.removeStorageSync('loginTime');
+            
+            this.resetToDefault();
+            
+            uni.showToast({ title: '已退出登录', icon: 'success' });
+            
+            setTimeout(() => {
+              uni.navigateTo({ url: '/pages/index/index' });
+            }, 1500);
+          }
+        }
+      });
+    },
+    
+    resetToDefault() {
+      this.username = '';
+      this.userAvatar = '/static/logo.png';
+      this.userId = null;
+      this.isLoggedIn = false;
+      this.showAvatarModal = false;
+      this.avatarLoadError = {};
+      this.initialAvatarIndex = 0;
+      this.pullDownDistance = 0;
+      this.isPulling = false;
+      this.bgHeight = this.originalBgHeight;
+      if (this.pullBackTimer) {
+        clearTimeout(this.pullBackTimer);
+        this.pullBackTimer = null;
+      }
+    }
+  }
+}
+</script>
+<style scoped>
+.page {
+  background-color: #f1f1f1;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 内容包装器 - 用于整体下拉 */
+.content-wrapper {
+  min-height: 100vh;
+  padding-bottom: 40rpx; /* 添加底部内边距 */
+}
+
+/* 设置背景颜色 */
+.top-bg {
+  height: 320rpx; /* 恢复高度 */
+  background: linear-gradient(135deg, #008c8c, #00a8a8);
+  position: relative;
+  overflow: hidden;
+  padding-top: 80rpx; /* 增加上内边距 */
+}
+
+/* 头像部分 */
+.head-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding-bottom: 30rpx;
+}
+
+.avatar-section {
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 20rpx;
+}
+
+.head-img {
+  width: 140rpx; /* 恢复合适大小 */
+  height: 140rpx;
+  overflow: hidden;
+  border-radius: 50%;
+  border: 6rpx solid white;
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.15);
+  background-color: white;
+  transition: all 0.3s ease;
+}
+
+/* 点击头像效果 */
+.avatar-section:active .head-img {
+  transform: scale(0.95);
+}
+
+/* 用户信息区域 */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.tip {
+  font-size: 32rpx;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.2);
+  padding: 0 30rpx;
+}
+
+.user-id {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.15);
+  padding: 6rpx 16rpx;
+  border-radius: 10rpx;
+  text-align: center;
+}
+
+/* 菜单卡片 - 整体下移，与头像保持距离 */
+.box {
+  background-color: white;
+  margin: 90rpx 20rpx 0; /* 增加上边距，整体下移 */
+  border-radius: 20rpx;
+  padding: 20rpx 0; /* 添加上下内边距 */
+  position: relative;
+  z-index: 5;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 菜单区域 */
+.menu-section {
+  padding: 0;
+}
+
+.row {
+  padding: 0;
+  margin: 0;
+}
+
+.row-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 20rpx; /* 增加垂直内边距 */
+  font-size: 28rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  min-height: 70rpx;
+  transition: background-color 0.2s ease;
+}
+
+.row:active .row-content {
+  background-color: #f8f9fa;
+}
+
+.row:last-child .row-content {
+  border-bottom: none;
+}
+
+/* 分享按钮包装器 */
+.share-wrapper {
+  margin: 0;
+  padding: 0;
+}
+
+.share-btn {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.share-btn::after {
+  border: none !important;
+}
+
+.icon {
+  font-size: 36rpx; /* 稍微增大图标 */
+  margin-right: 15rpx;
+  width: 40rpx;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.row:active .icon {
+  transform: scale(1.1);
+}
+
+.text {
+  color: #333;
+  font-size: 28rpx;
+  flex: 1;
+  text-align: left;
+}
+
+.arrow {
+  color: #ccc;
+  font-size: 26rpx;
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.row:active .arrow {
+  transform: translateX(5rpx);
+}
+
+/* 底部按钮 - 与菜单卡片分离，中间保持距离 */
+.end {
+  background-color: white;
+  margin: 30rpx 20rpx 0; /* 增加上边距，与菜单卡片分离 */
+  border-radius: 20rpx;
+  padding: 0 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.action-btn {
+  width: 100%;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.action-btn .row-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx; /* 稍微增大字体 */
+  font-weight: bold;
+  border-radius: 12rpx;
+  margin: 20rpx 0;
+  padding: 25rpx 15rpx;
+  border-bottom: none;
+  transition: all 0.3s ease;
+}
+
+.login-btn .row-content {
+  background: linear-gradient(135deg, #008c8c, #00a8a8);
+  color: white;
+}
+
+.action-btn:last-child .row-content {
+  border-bottom: none;
+}
+
+/* 页脚 */
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30rpx 0;
+  font-size: 22rpx;
+  margin: 25rpx 0 0; /* 调整上边距 */
+  color: #999;
+}
+
+/* 头像弹窗样式优化 */
+.avatar-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20rpx;
+  width: 90%;
+  max-width: 600rpx;
+  padding: 30rpx 25rpx;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-info-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.username {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.user-id-modal {
+  font-size: 22rpx;
+  color: #666;
+  background: #f5f5f5;
+  padding: 5rpx 14rpx;
+  border-radius: 8rpx;
+}
+
+.close {
+  font-size: 38rpx;
+  color: #999;
+  padding: 8rpx;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.close:active {
+  transform: scale(0.9);
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15rpx;
+}
+
+.avatar-option {
+  position: relative;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-option:active {
+  transform: scale(0.95);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.avatar-img.selected {
+  border: 3rpx solid #008c8c;
+  box-shadow: 0 3rpx 10rpx rgba(0, 140, 140, 0.3);
+}
+
+.avatar-index {
+  position: absolute;
+  top: 3rpx;
+  right: 3rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 16rpx;
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

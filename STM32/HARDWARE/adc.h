@@ -2,15 +2,19 @@
 #define __ADC_H	
 #include "sys.h"
 #include "system.h"
-#define Battery_Ch    8 //Battery voltage, ADC channel 8 //µç³ØµçÑ¹£¬ADCÍ¨µÀ8
-#define Potentiometer 9  //Potentiometer, ADC channel 9 //µçÎ»Æ÷£¬ADCÍ¨µÀ9
+#define Battery_Ch    8  // ç”µæ± ç”µå‹ ADC2é€šé“8 PB0
+#define Potentiometer 9  // ç”µä½å™¨   ADC1é€šé“9 PB1
+#define Smoke_Ch      6  // çƒŸé›¾ä¼ æ„Ÿå™¨AO ADC1é€šé“6 PA6
 void Adc_Init(void);
-void  Adc_POWER_Init(void);
+void Adc_POWER_Init(void);
+void Adc_Smoke_Init(void);
 u16 Get_Adc(u8 ch);
 u16 Get_Adc2(u8 ch);
-float Get_battery_volt(void) ;
+float Get_battery_volt(void);
 u16 Get_adc_Average(u8 chn, u8 times);
-extern float Voltage,Voltage_Count,Voltage_All; 	
-#endif 
+u16 Get_Smoke_Value(void);
+extern float Voltage, Voltage_Count, Voltage_All;
+extern u16 Smoke_Value;  // çƒŸé›¾ADCåŸå§‹å€¼ 0~4095
+#endif
 
 

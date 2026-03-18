@@ -1,0 +1,167 @@
+@import "../../uvue.wxss";
+:host{display:flex;flex-direction:column}
+
+.container.data-v-6c2a468c {
+    flex: 1;
+    background: #f5f5f5;
+}
+
+/* 系统标题 */
+.header.data-v-6c2a468c {
+    padding: 60rpx 0 30rpx 0;
+    align-items: center;
+    background: #f5f5f5;
+}
+.title.data-v-6c2a468c {
+    font-size: 36rpx;
+    font-weight: bold;
+    color: #333333;
+    text-align: center;
+}
+
+/* 注册表单 */
+.register-form.data-v-6c2a468c {
+    margin: 0 40rpx;
+    background: #ffffff;
+    border-radius: 20rpx;
+    padding: 50rpx 40rpx;
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+    margin-top: 20rpx;
+}
+.form-title.data-v-6c2a468c {
+    margin-bottom: 50rpx;
+    align-items: center;
+}
+.title-text.data-v-6c2a468c {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333333;
+}
+
+/* 输入框组 */
+.input-group.data-v-6c2a468c {
+    margin-bottom: 40rpx;
+}
+.input-label.data-v-6c2a468c {
+    margin-bottom: 20rpx;
+}
+.input-label text.data-v-6c2a468c {
+    font-size: 28rpx;
+    color: #333333;
+    font-weight: 500;
+}
+.input-container.data-v-6c2a468c {
+    border: 2rpx solid #e0e0e0;
+    border-radius: 12rpx;
+    padding: 24rpx;
+    background: #f8f9fa;
+    flex-direction: row;
+    align-items: center;
+}
+.input.data-v-6c2a468c {
+    font-size: 28rpx;
+    color: #333333;
+    flex: 1;
+}
+.placeholder.data-v-6c2a468c {
+    color: #999999;
+    font-size: 28rpx;
+}
+
+/* 密码显示切换 */
+.password-toggle.data-v-6c2a468c {
+    padding: 10rpx;
+    margin-left: 20rpx;
+}
+.toggle-icon.data-v-6c2a468c {
+    font-size: 32rpx;
+}
+
+/* 表单选项 */
+.form-options.data-v-6c2a468c {
+    margin-bottom: 50rpx;
+}
+.agreement.data-v-6c2a468c {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+.checkbox.data-v-6c2a468c {
+    width: 32rpx;
+    height: 32rpx;
+    border: 2rpx solid #cccccc;
+    border-radius: 6rpx;
+    margin-right: 16rpx;
+    justify-content: center;
+    align-items: center;
+}
+.checkbox.checked.data-v-6c2a468c {
+    background: #1890ff;
+    border-color: #1890ff;
+}
+.checkmark.data-v-6c2a468c {
+    color: #ffffff;
+    font-size: 24rpx;
+    font-weight: bold;
+}
+.option-text.data-v-6c2a468c {
+    font-size: 26rpx;
+    color: #666666;
+    margin-right: 10rpx;
+}
+.link.data-v-6c2a468c {
+    color: #1890ff;
+    font-size: 26rpx;
+}
+
+/* 注册按钮 */
+.register-button.data-v-6c2a468c {
+    background: #1890ff;
+    border-radius: 12rpx;
+    padding: 28rpx;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30rpx;
+}
+.register-button.data-v-6c2a468c:active {
+    opacity: 0.9;
+    background: #096dd9;
+}
+.register-button-text.data-v-6c2a468c {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* 登录链接 */
+.login-link.data-v-6c2a468c {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20rpx;
+}
+.login-text.data-v-6c2a468c {
+    font-size: 26rpx;
+    color: #666666;
+    margin-right: 10rpx;
+}
+
+/* 底部版权 */
+.footer.data-v-6c2a468c {
+    margin-top: 60rpx;
+    padding: 40rpx 0;
+    align-items: center;
+    background: #f5f5f5;
+}
+.copyright.data-v-6c2a468c {
+    font-size: 24rpx;
+    color: #666666;
+    margin-bottom: 20rpx;
+}
+.about-link.data-v-6c2a468c {
+    padding: 10rpx 20rpx;
+}
+.about-link .link.data-v-6c2a468c {
+    font-size: 24rpx;
+    color: #1890ff;
+}

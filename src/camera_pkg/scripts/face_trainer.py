@@ -38,7 +38,8 @@ class FaceTrainer:
         self.bridge = CvBridge()
         self.script_dir = os.path.dirname(os.path.abspath(__file__))
         self.data_dir = os.path.join(self.script_dir, 'face_data')
-        os.makedirs(self.data_dir, exist_ok=True)
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir)
 
         self.detector = dlib.get_frontal_face_detector()
 

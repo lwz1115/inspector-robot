@@ -608,7 +608,7 @@ function connectCamera() {
     dot.style.background = 'var(--success)';
     document.getElementById('camStatus').textContent = '直播中';
   };
-  img.src = 'http://192.168.2.235:8081/stream?topic=/image&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
+  img.src = 'http://10.234.236.100:8081/stream?topic=/image&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
   img.style.display = 'block';
   document.getElementById('camConnBtn').style.display = 'none';
   document.getElementById('camDiscBtn').style.display = 'block';

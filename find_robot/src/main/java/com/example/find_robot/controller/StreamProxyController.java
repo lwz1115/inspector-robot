@@ -17,7 +17,7 @@ import java.net.URL;
 @CrossOrigin(origins = "*")
 public class StreamProxyController {
 
-    private static final String CAM_URL = "http://192.168.2.235:8081/stream?topic=/image";
+    private static final String CAM_URL = "http://10.234.236.100:8081/stream?topic=/image";
 
     @GetMapping("/camera")
     public ResponseEntity<StreamingResponseBody> proxyStream() {

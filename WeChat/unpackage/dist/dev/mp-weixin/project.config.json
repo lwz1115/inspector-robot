@@ -1,0 +1,41 @@
+{
+  "description": "项目配置文件。",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "postcss": true,
+    "minified": false,
+    "newFeature": true,
+    "bigPackageSizeSupport": true,
+    "condition": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "",
+  "appid": "wx3bcd4b7f597028b8",
+  "projectname": "FindRobot",
+  "condition": {
+    "search": {
+      "current": -1,
+      "list": []
+    },
+    "conversation": {
+      "current": -1,
+      "list": []
+    },
+    "game": {
+      "current": -1,
+      "list": []
+    },
+    "miniprogram": {
+      "current": -1,
+      "list": []
+    }
+  },
+  "projectArchitecture": "multiPlatform",
+  "simulatorPluginLibVersion": {
+    "wxext14566970e7e9f62": "2.27.3"
+  }
+}

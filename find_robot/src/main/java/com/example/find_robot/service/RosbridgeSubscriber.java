@@ -27,7 +27,7 @@ public class RosbridgeSubscriber {
 
     private static final Logger log = LoggerFactory.getLogger(RosbridgeSubscriber.class);
 
-    @Value("${rosbridge.url:ws://192.168.2.235:9090}")
+    @Value("${rosbridge.url:ws://10.234.236.100:9090}")
     private String rosbridgeUrl;
 
     private final FaceEventBroadcaster broadcaster;

@@ -7,9 +7,9 @@ extern int Time_count;
 Function: Usartx3, Usartx1,Usartx5 and CAN send data task 
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú3¡¢´®¿Ú1¡¢´®¿Ú5¡¢CAN·¢ËÍÊı¾İÈÎÎñ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£3ã€ä¸²å£1ã€ä¸²å£5ã€CANå‘é€æ•°æ®ä»»åŠ¡
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void data_task(void *pvParameters)
 {
@@ -18,32 +18,32 @@ void data_task(void *pvParameters)
    while(1)
     {	
 			//The task is run at 20hz
-			//´ËÈÎÎñÒÔ20HzµÄÆµÂÊÔËĞĞ
+			//è¯¥ä»»åŠ¡ä»¥20Hzçš„é¢‘ç‡è¿è¡Œ
 			vTaskDelayUntil(&lastWakeTime, F2T(RATE_20_HZ));
 			//Assign the data to be sent
-			//¶ÔÒª½øĞĞ·¢ËÍµÄÊı¾İ½øĞĞ¸³Öµ
+			//å¯¹è¦è¿›è¡Œå‘é€çš„æ•°æ®è¿›è¡Œèµ‹å€¼
 			data_transition(); 
-		//	USART1_SEND();     //Serial port 1 sends data //´®¿Ú1·¢ËÍÊı¾İ
-			USART3_SEND();     //Serial port 3 (ROS) sends data  //´®¿Ú3(ROS)·¢ËÍÊı¾İ
-			//CAN_SEND();        //CAN send data //CAN·¢ËÍÊı¾İ	
+		//	USART1_SEND();     //Serial port 1 sends data //ä¸²å£1å‘é€æ•°æ®
+			USART3_SEND();     //Serial port 3 (ROS) sends data  //ä¸²å£3(ROS)å‘é€æ•°æ®
+			//CAN_SEND();        //CAN send data //CANå‘é€æ•°æ®
 		}
 }
 /**************************************************************************
 Function: The data sent by the serial port is assigned
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú·¢ËÍµÄÊı¾İ½øĞĞ¸³Öµ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šå¯¹ä¸²å£å‘é€çš„æ•°æ®è¿›è¡Œèµ‹å€¼
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void data_transition(void)
 {
-	Send_Data.Sensor_Str.Frame_Header = FRAME_HEADER; //Frame_header //Ö¡Í·
-	Send_Data.Sensor_Str.Frame_Tail = FRAME_TAIL;     //Frame_tail //Ö¡Î²
+	Send_Data.Sensor_Str.Frame_Header = FRAME_HEADER; //Frame_header //å¸§å¤´
+	Send_Data.Sensor_Str.Frame_Tail = FRAME_TAIL;     //Frame_tail //å¸§å°¾
 	
 	//According to different vehicle types, different kinematics algorithms were selected to carry out the forward kinematics solution, 
 	//and the three-axis velocity was obtained from each wheel velocity
-	//¸ù¾İ²»Í¬³µĞÍÑ¡Ôñ²»Í¬ÔË¶¯Ñ§Ëã·¨½øĞĞÔË¶¯Ñ§Õı½â£¬´Ó¸÷³µÂÖËÙ¶ÈÇó³öÈıÖáËÙ¶È
+	//æ ¹æ®ä¸åŒè½¦å‹é€‰æ‹©ä¸åŒè¿åŠ¨å­¦ç®—æ³•è¿›è¡Œæ­£è¿åŠ¨å­¦è§£ç®—ï¼Œä»å„è½®é€Ÿåº¦å¾—åˆ°ä¸‰è½´é€Ÿåº¦
 	switch(Car_Mode)
 	{	
 		case Mec_Car:      
@@ -83,75 +83,73 @@ void data_transition(void)
 			break; 
 	}
 	
-	//The acceleration of the triaxial acceleration //¼ÓËÙ¶È¼ÆÈıÖá¼ÓËÙ¶È
-	Send_Data.Sensor_Str.Accelerometer.X_data= accel[1]; //The accelerometer Y-axis is converted to the ros coordinate X axis //¼ÓËÙ¶È¼ÆYÖá×ª»»µ½ROS×ø±êXÖá
-	Send_Data.Sensor_Str.Accelerometer.Y_data=-accel[0]; //The accelerometer X-axis is converted to the ros coordinate y axis //¼ÓËÙ¶È¼ÆXÖá×ª»»µ½ROS×ø±êYÖá
-	Send_Data.Sensor_Str.Accelerometer.Z_data= accel[2]; //The accelerometer Z-axis is converted to the ros coordinate Z axis //¼ÓËÙ¶È¼ÆZÖá×ª»»µ½ROS×ø±êZÖá
+	//The acceleration of the triaxial acceleration //åŠ é€Ÿåº¦è®¡ä¸‰è½´åŠ é€Ÿåº¦
+	Send_Data.Sensor_Str.Accelerometer.X_data= accel[1]; //The accelerometer Y-axis is converted to the ros coordinate X axis //åŠ é€Ÿåº¦è®¡Yè½´è½¬æ¢ä¸ºROSåæ ‡Xè½´
+	Send_Data.Sensor_Str.Accelerometer.Y_data=-accel[0]; //The accelerometer X-axis is converted to the ros coordinate y axis //åŠ é€Ÿåº¦è®¡Xè½´è½¬æ¢ä¸ºROSåæ ‡Yè½´
+	Send_Data.Sensor_Str.Accelerometer.Z_data= accel[2]; //The accelerometer Z-axis is converted to the ros coordinate Z axis //åŠ é€Ÿåº¦è®¡Zè½´è½¬æ¢ä¸ºROSåæ ‡Zè½´
 	
-	//The Angle velocity of the triaxial velocity //½ÇËÙ¶È¼ÆÈıÖá½ÇËÙ¶È
-	Send_Data.Sensor_Str.Gyroscope.X_data= gyro[1]; //The Y-axis is converted to the ros coordinate X axis //½ÇËÙ¶È¼ÆYÖá×ª»»µ½ROS×ø±êXÖá
-	Send_Data.Sensor_Str.Gyroscope.Y_data=-gyro[0]; //The X-axis is converted to the ros coordinate y axis //½ÇËÙ¶È¼ÆXÖá×ª»»µ½ROS×ø±êYÖá
+	//The Angle velocity of the triaxial velocity //é™€èºä»ªä¸‰è½´è§’é€Ÿåº¦
+	Send_Data.Sensor_Str.Gyroscope.X_data= gyro[1]; //The Y-axis is converted to the ros coordinate X axis //é™€èºä»ªYè½´è½¬æ¢ä¸ºROSåæ ‡Xè½´
+	Send_Data.Sensor_Str.Gyroscope.Y_data=-gyro[0]; //The X-axis is converted to the ros coordinate y axis //é™€èºä»ªXè½´è½¬æ¢ä¸ºROSåæ ‡Yè½´
 	if(Flag_Stop==0) 
 		//If the motor control bit makes energy state, the z-axis velocity is sent normall
-	  //Èç¹ûµç»ú¿ØÖÆÎ»Ê¹ÄÜ×´Ì¬£¬ÄÇÃ´Õı³£·¢ËÍZÖá½ÇËÙ¶È
+	  //å¦‚æœç”µæœºæ§åˆ¶ä½ä½¿èƒ½çŠ¶æ€ï¼Œé‚£ä¹ˆæ­£å¸¸å‘é€Zè½´è§’é€Ÿåº¦
 		Send_Data.Sensor_Str.Gyroscope.Z_data=gyro[2];  
 	else  
 		//If the robot is static (motor control dislocation), the z-axis is 0
-    //Èç¹û»úÆ÷ÈËÊÇ¾²Ö¹µÄ£¨µç»ú¿ØÖÆÎ»Ê§ÄÜ£©£¬ÄÇÃ´·¢ËÍµÄZÖá½ÇËÙ¶ÈÎª0		
+    //å¦‚æœæœºå™¨äººæ˜¯é™æ­¢çš„ï¼ˆç”µæœºæ§åˆ¶å¤±èƒ½ï¼‰ï¼Œé‚£ä¹ˆå‘é€çš„Zè½´é€Ÿåº¦ä¸º0
 		Send_Data.Sensor_Str.Gyroscope.Z_data=0;        
 	
 	//Battery voltage (this is a thousand times larger floating point number, which will be reduced by a thousand times as well as receiving the data).
-	//µç³ØµçÑ¹(ÕâÀï½«¸¡µãÊı·Å´óÒ»Ç§±¶´«Êä£¬ÏàÓ¦µÄÔÚ½ÓÊÕ¶ËÔÚ½ÓÊÕµ½Êı¾İºóÒ²»áËõĞ¡Ò»Ç§±¶)
-	Send_Data.Sensor_Str.Power_Voltage = Voltage*1000; 
+	//ç”µæ± ç”µå‹ï¼ˆè¿™é‡Œå°†æµ®ç‚¹æ•°æ”¾å¤§äº†ä¸€åƒå€ä¼ è¾“ï¼Œå¯¹åº”åœ¨æ¥æ”¶ç«¯æ¥æ”¶åˆ°æ•°æ®åä¹Ÿè¦ç¼©å°ä¸€åƒå€ï¼‰
+	Send_Data.Sensor_Str.Power_Voltage = Voltage*1000;
+
+	// æ¸©åº¦ã€æ¹¿åº¦ã€çƒŸé›¾
+	Send_Data.Sensor_Str.Temperature = DHT11_Temp;
+	Send_Data.Sensor_Str.Humidity    = DHT11_Humi;
+	Send_Data.Sensor_Str.Smoke       = (short)Smoke_Value;
 	
-	Send_Data.buffer[0]=Send_Data.Sensor_Str.Frame_Header; //Frame_heade //Ö¡Í·
-  Send_Data.buffer[1]=Flag_Stop; //Car software loss marker //Ğ¡³µÈí¼şÊ§ÄÜ±êÖ¾Î»
-	
-	//The three-axis speed of / / car is split into two eight digit Numbers
-	//Ğ¡³µÈıÖáËÙ¶È,¸÷Öá¶¼²ğ·ÖÎªÁ½¸ö8Î»Êı¾İÔÙ·¢ËÍ
+	Send_Data.buffer[0]=Send_Data.Sensor_Str.Frame_Header;
+  Send_Data.buffer[1]=Flag_Stop;
 	Send_Data.buffer[2]=Send_Data.Sensor_Str.X_speed >>8; 
 	Send_Data.buffer[3]=Send_Data.Sensor_Str.X_speed ;    
 	Send_Data.buffer[4]=Send_Data.Sensor_Str.Y_speed>>8;  
 	Send_Data.buffer[5]=Send_Data.Sensor_Str.Y_speed;     
 	Send_Data.buffer[6]=Send_Data.Sensor_Str.Z_speed >>8; 
 	Send_Data.buffer[7]=Send_Data.Sensor_Str.Z_speed ;    
-	
-	//The acceleration of the triaxial axis of / / imu accelerometer is divided into two eight digit reams
-	//IMU¼ÓËÙ¶È¼ÆÈıÖá¼ÓËÙ¶È,¸÷Öá¶¼²ğ·ÖÎªÁ½¸ö8Î»Êı¾İÔÙ·¢ËÍ
 	Send_Data.buffer[8]=Send_Data.Sensor_Str.Accelerometer.X_data>>8; 
 	Send_Data.buffer[9]=Send_Data.Sensor_Str.Accelerometer.X_data;   
 	Send_Data.buffer[10]=Send_Data.Sensor_Str.Accelerometer.Y_data>>8;
 	Send_Data.buffer[11]=Send_Data.Sensor_Str.Accelerometer.Y_data;
 	Send_Data.buffer[12]=Send_Data.Sensor_Str.Accelerometer.Z_data>>8;
 	Send_Data.buffer[13]=Send_Data.Sensor_Str.Accelerometer.Z_data;
-	
-	//The axis of the triaxial velocity of the / /imu is divided into two eight digits
-	//IMU½ÇËÙ¶È¼ÆÈıÖá½ÇËÙ¶È,¸÷Öá¶¼²ğ·ÖÎªÁ½¸ö8Î»Êı¾İÔÙ·¢ËÍ
 	Send_Data.buffer[14]=Send_Data.Sensor_Str.Gyroscope.X_data>>8;
 	Send_Data.buffer[15]=Send_Data.Sensor_Str.Gyroscope.X_data;
 	Send_Data.buffer[16]=Send_Data.Sensor_Str.Gyroscope.Y_data>>8;
 	Send_Data.buffer[17]=Send_Data.Sensor_Str.Gyroscope.Y_data;
 	Send_Data.buffer[18]=Send_Data.Sensor_Str.Gyroscope.Z_data>>8;
 	Send_Data.buffer[19]=Send_Data.Sensor_Str.Gyroscope.Z_data;
-	
-	//Battery voltage, split into two 8 digit Numbers
-	//µç³ØµçÑ¹,²ğ·ÖÎªÁ½¸ö8Î»Êı¾İ·¢ËÍ
+	// ç”µå‹ [20-21]
 	Send_Data.buffer[20]=Send_Data.Sensor_Str.Power_Voltage >>8; 
-	Send_Data.buffer[21]=Send_Data.Sensor_Str.Power_Voltage; 
-
-  //Data check digit calculation, Pattern 1 is a data check
-  //Êı¾İĞ£ÑéÎ»¼ÆËã£¬Ä£Ê½1ÊÇ·¢ËÍÊı¾İĞ£Ñé
-	Send_Data.buffer[22]=Check_Sum(22,1); 
-	
-	Send_Data.buffer[23]=Send_Data.Sensor_Str.Frame_Tail; //Frame_tail //Ö¡Î²
+	Send_Data.buffer[21]=Send_Data.Sensor_Str.Power_Voltage;
+	// æ¸©åº¦ [22], æ¹¿åº¦ [23], çƒŸé›¾ [24-25]
+	Send_Data.buffer[22]=Send_Data.Sensor_Str.Temperature;
+	Send_Data.buffer[23]=Send_Data.Sensor_Str.Humidity;
+	Send_Data.buffer[24]=Send_Data.Sensor_Str.Smoke >>8;
+	Send_Data.buffer[25]=Send_Data.Sensor_Str.Smoke;
+	// æ ¡éªŒ [26], å¸§å°¾ [27-29 padding + tail at 29]
+	Send_Data.buffer[26]=Check_Sum(26,1);
+	Send_Data.buffer[27]=0;
+	Send_Data.buffer[28]=0;
+	Send_Data.buffer[29]=Send_Data.Sensor_Str.Frame_Tail;
 }
 /**************************************************************************
 Function: Serial port 1 sends data
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú1·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£1å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void USART1_SEND(void)
 {
@@ -166,14 +164,14 @@ void USART1_SEND(void)
 Function: Serial port 3 sends data
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú3·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£3å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void USART3_SEND(void)
 {
   unsigned char i = 0;	
-	for(i=0; i<24; i++)
+	for(i=0; i<30; i++)  //å‘é€å®Œæ•´30å­—èŠ‚å¸§ï¼ˆå«æ¸©æ¹¿åº¦çƒŸé›¾æ ¡éªŒå¸§å°¾ï¼‰
 	{
 		usart3_send(Send_Data.buffer[i]);
 	}	 
@@ -182,9 +180,9 @@ void USART3_SEND(void)
 Function: Serial port 5 sends data
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú5·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£5å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void USART5_SEND(void)
 {
@@ -198,9 +196,9 @@ void USART5_SEND(void)
 Function: CAN sends data
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£ºCAN·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ »Ø Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šCANå‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šæ— 
+è¿” å› å€¼ï¼šæ— 
 **************************************************************************/
 void CAN_SEND(void) 
 {
@@ -228,9 +226,9 @@ void CAN_SEND(void)
 Function: Serial port 1 initialization
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú1³õÊ¼»¯
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ »Ø Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£1åˆå§‹åŒ–
+å…¥å£å‚æ•°ï¼šæ— 
+è¿” å› å€¼ï¼šæ— 
 **************************************************************************/
 void uart1_init(u32 bound)
 {  	 
@@ -238,50 +236,51 @@ void uart1_init(u32 bound)
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);	 //Enable the gpio clock //Ê¹ÄÜGPIOÊ±ÖÓ
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //Enable the Usart clock //Ê¹ÄÜUSARTÊ±ÖÓ
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);	 //Enable the gpio clock //ä½¿èƒ½GPIOæ—¶é’Ÿ
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //Enable the Usart clock //ä½¿èƒ½USARTæ—¶é’Ÿ
 
 	GPIO_PinAFConfig(GPIOA,GPIO_PinSource9,GPIO_AF_USART1);	
 	GPIO_PinAFConfig(GPIOA,GPIO_PinSource10 ,GPIO_AF_USART1);	 
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9|GPIO_Pin_10;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //Êä³öÄ£Ê½
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //¸ßËÙ50MHZ
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ÉÏÀ­
-	GPIO_Init(GPIOA, &GPIO_InitStructure);  		          //³õÊ¼»¯
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //å¤ç”¨æ¨¡å¼
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //é€Ÿåº¦50MHZ
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ä¸Šæ‹‰
+	GPIO_Init(GPIOA, &GPIO_InitStructure);  		          //åˆå§‹åŒ–
 	
-  //UsartNVIC configuration //UsartNVICÅäÖÃ
+  //UsartNVIC configuration //UsartNVICé…ç½®
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Preempt priority //æŠ¢å ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1 ;
-	//Subpriority //×ÓÓÅÏÈ¼¶
+	//Subpriority //å­ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		
-	//Enable the IRQ channel //IRQÍ¨µÀÊ¹ÄÜ
+	//Enable the IRQ channel //IRQé€šé“ä½¿èƒ½
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;	
   //Initialize the VIC register with the specified parameters 
-	//¸ù¾İÖ¸¶¨µÄ²ÎÊı³õÊ¼»¯VIC¼Ä´æÆ÷	
+	//ç”¨æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–VICå¯„å­˜å™¨
 	NVIC_Init(&NVIC_InitStructure);	
 	
-  //USART Initialization Settings ³õÊ¼»¯ÉèÖÃ
-	USART_InitStructure.USART_BaudRate = bound; //Port rate //´®¿Ú²¨ÌØÂÊ
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //×Ö³¤Îª8Î»Êı¾İ¸ñÊ½
-	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //Ò»¸öÍ£Ö¹Î»
-	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //ÎŞÆæÅ¼Ğ£ÑéÎ»
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //ÎŞÓ²¼şÊı¾İÁ÷¿ØÖÆ
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //ÊÕ·¢Ä£Ê½
-	USART_Init(USART1, &USART_InitStructure); //Initialize serial port 1 //³õÊ¼»¯´®¿Ú1
+  //USART Initialization Settings //åˆå§‹åŒ–è®¾ç½®
+	USART_InitStructure.USART_BaudRate = bound; //Port rate //ä¸²å£æ³¢ç‰¹ç‡
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //å­—é•¿ä¸º8ä½æ•°æ®æ ¼å¼
+	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //ä¸€ä¸ªåœæ­¢ä½
+	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //æ— å¥‡å¶æ ¡éªŒä½
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //æ— ç¡¬ä»¶æ•°æ®æµæ§åˆ¶
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //æ”¶å‘æ¨¡å¼
+	USART_Init(USART1, &USART_InitStructure); //Initialize serial port 1 //åˆå§‹åŒ–ä¸²å£1
 	
-	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //¿ªÆô´®¿Ú½ÓÊÜÖĞ¶Ï
-	USART_Cmd(USART1, ENABLE);                     //Enable serial port 1 //Ê¹ÄÜ´®¿Ú1
+	USART_ITConfig(USART1, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //å¼€å¯ä¸²å£æ¥æ”¶ä¸­æ–­
+	USART_Cmd(USART1, ENABLE);                     //Enable serial port 1 //ä½¿èƒ½ä¸²å£1
 }
+
 /**************************************************************************
 Function: Serial port 2 initialization
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú2³õÊ¼»¯
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£2åˆå§‹åŒ–
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void uart2_init(u32 bound)
 {  	 
@@ -289,50 +288,51 @@ void uart2_init(u32 bound)
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //Ê¹ÄÜGPIOÊ±ÖÓ
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); //Enable the Usart clock //Ê¹ÄÜUSARTÊ±ÖÓ
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //ä½¿èƒ½GPIOæ—¶é’Ÿ
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE); //Enable the Usart clock //ä½¿èƒ½USARTæ—¶é’Ÿ
 	
 	GPIO_PinAFConfig(GPIOD,GPIO_PinSource5,GPIO_AF_USART2);	
 	GPIO_PinAFConfig(GPIOD,GPIO_PinSource6 ,GPIO_AF_USART2);	 
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5|GPIO_Pin_6;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //Êä³öÄ£Ê½
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //¸ßËÙ50MHZ
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ÉÏÀ­
-	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //³õÊ¼»¯
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //å¤ç”¨æ¨¡å¼
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //é€Ÿåº¦50MHZ
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ä¸Šæ‹‰
+	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //åˆå§‹åŒ–
 	
-	//UsartNVIC configuration //UsartNVICÅäÖÃ
+	//UsartNVIC configuration //UsartNVICé…ç½®
 	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Preempt priority //æŠ¢å ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=1 ;
-	//Subpriority //×ÓÓÅÏÈ¼¶
+	//Subpriority //å­ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;	
-  //Enable the IRQ channel //IRQÍ¨µÀÊ¹ÄÜ	
+  //Enable the IRQ channel //IRQé€šé“ä½¿èƒ½
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   //Initialize the VIC register with the specified parameters 
-	//¸ù¾İÖ¸¶¨µÄ²ÎÊı³õÊ¼»¯VIC¼Ä´æÆ÷		
+	//ç”¨æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–VICå¯„å­˜å™¨
 	NVIC_Init(&NVIC_InitStructure);	
 	
-	//USART Initialization Settings ³õÊ¼»¯ÉèÖÃ
-	USART_InitStructure.USART_BaudRate = bound; //Port rate //´®¿Ú²¨ÌØÂÊ
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //×Ö³¤Îª8Î»Êı¾İ¸ñÊ½
-	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //Ò»¸öÍ£Ö¹
-	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //ÎŞÆæÅ¼Ğ£ÑéÎ»
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //ÎŞÓ²¼şÊı¾İÁ÷¿ØÖÆ
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //ÊÕ·¢Ä£Ê½
-	USART_Init(USART2, &USART_InitStructure);      //Initialize serial port 2 //³õÊ¼»¯´®¿Ú2
+	//USART Initialization Settings //åˆå§‹åŒ–è®¾ç½®
+	USART_InitStructure.USART_BaudRate = bound; //Port rate //ä¸²å£æ³¢ç‰¹ç‡
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //å­—é•¿ä¸º8ä½æ•°æ®æ ¼å¼
+	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //ä¸€ä¸ªåœæ­¢ä½
+	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //æ— å¥‡å¶æ ¡éªŒä½
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //æ— ç¡¬ä»¶æ•°æ®æµæ§åˆ¶
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //æ”¶å‘æ¨¡å¼
+	USART_Init(USART2, &USART_InitStructure);      //Initialize serial port 2 //åˆå§‹åŒ–ä¸²å£2
 	
-	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //¿ªÆô´®¿Ú½ÓÊÜÖĞ¶Ï
-	USART_Cmd(USART2, ENABLE);                     //Enable serial port 2 //Ê¹ÄÜ´®¿Ú2 
+	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //å¼€å¯ä¸²å£æ¥æ”¶ä¸­æ–­
+	USART_Cmd(USART2, ENABLE);                     //Enable serial port 2 //ä½¿èƒ½ä¸²å£2
 }
+
 /**************************************************************************
 Function: Serial port 3 initialization
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú3³õÊ¼»¯
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£3åˆå§‹åŒ–
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void uart3_init(u32 bound)
 {  	 
@@ -340,50 +340,51 @@ void uart3_init(u32 bound)
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //Ê¹ÄÜGPIOÊ±ÖÓ
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //Enable the Usart clock //Ê¹ÄÜUSARTÊ±ÖÓ
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //ä½¿èƒ½GPIOæ—¶é’Ÿ
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART3, ENABLE); //Enable the Usart clock //ä½¿èƒ½USARTæ—¶é’Ÿ
 	
 	GPIO_PinAFConfig(GPIOD,GPIO_PinSource8,GPIO_AF_USART3);	
 	GPIO_PinAFConfig(GPIOD,GPIO_PinSource9,GPIO_AF_USART3);	 
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8|GPIO_Pin_9;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //Êä³öÄ£Ê½
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //¸ßËÙ50MHZ
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ÉÏÀ­
-	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //³õÊ¼»¯
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //å¤ç”¨æ¨¡å¼
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //é€Ÿåº¦50MHZ
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ä¸Šæ‹‰
+	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //åˆå§‹åŒ–
 	
-  //UsartNVIC configuration //UsartNVICÅäÖÃ
+  //UsartNVIC configuration //UsartNVICé…ç½®
   NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Preempt priority //æŠ¢å ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=2 ;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Subpriority //å­ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		
-	//Enable the IRQ channel //IRQÍ¨µÀÊ¹ÄÜ	
+	//Enable the IRQ channel //IRQé€šé“ä½¿èƒ½
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;	
   //Initialize the VIC register with the specified parameters 
-	//¸ù¾İÖ¸¶¨µÄ²ÎÊı³õÊ¼»¯VIC¼Ä´æÆ÷		
+	//ç”¨æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–VICå¯„å­˜å™¨
 	NVIC_Init(&NVIC_InitStructure);
 	
-  //USART Initialization Settings ³õÊ¼»¯ÉèÖÃ
-	USART_InitStructure.USART_BaudRate = bound; //Port rate //´®¿Ú²¨ÌØÂÊ
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //×Ö³¤Îª8Î»Êı¾İ¸ñÊ½
-	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //Ò»¸öÍ£Ö¹
-	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //ÎŞÆæÅ¼Ğ£ÑéÎ»
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //ÎŞÓ²¼şÊı¾İÁ÷¿ØÖÆ
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //ÊÕ·¢Ä£Ê½
-  USART_Init(USART3, &USART_InitStructure);      //Initialize serial port 3 //³õÊ¼»¯´®¿Ú3
+  //USART Initialization Settings //åˆå§‹åŒ–è®¾ç½®
+	USART_InitStructure.USART_BaudRate = bound; //Port rate //ä¸²å£æ³¢ç‰¹ç‡
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //å­—é•¿ä¸º8ä½æ•°æ®æ ¼å¼
+	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //ä¸€ä¸ªåœæ­¢ä½
+	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //æ— å¥‡å¶æ ¡éªŒä½
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //æ— ç¡¬ä»¶æ•°æ®æµæ§åˆ¶
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //æ”¶å‘æ¨¡å¼
+  USART_Init(USART3, &USART_InitStructure);      //Initialize serial port 3 //åˆå§‹åŒ–ä¸²å£3
 	
-  USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //¿ªÆô´®¿Ú½ÓÊÜÖĞ¶Ï
-  USART_Cmd(USART3, ENABLE);                     //Enable serial port 3 //Ê¹ÄÜ´®¿Ú3 
+  USART_ITConfig(USART3, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //å¼€å¯ä¸²å£æ¥æ”¶ä¸­æ–­
+  USART_Cmd(USART3, ENABLE);                     //Enable serial port 3 //ä½¿èƒ½ä¸²å£3
 }
+
 /**************************************************************************
 Function: Serial port 5 initialization
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú5³õÊ¼»¯
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£5åˆå§‹åŒ–
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void uart5_init(u32 bound)
 {  	 
@@ -392,99 +393,100 @@ void uart5_init(u32 bound)
 	NVIC_InitTypeDef NVIC_InitStructure;
 	
 	//PC12 TX
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);	 //Enable the gpio clock  //Ê¹ÄÜGPIOÊ±ÖÓ
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOC, ENABLE);	 //Enable the gpio clock  //ä½¿èƒ½GPIOæ—¶é’Ÿ
 		//PD2 RX
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //Ê¹ÄÜGPIOÊ±ÖÓ
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); //Enable the Usart clock //Ê¹ÄÜUSARTÊ±ÖÓ
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);	 //Enable the gpio clock  //ä½¿èƒ½GPIOæ—¶é’Ÿ
+  RCC_APB1PeriphClockCmd(RCC_APB1Periph_UART5, ENABLE); //Enable the Usart clock //ä½¿èƒ½USARTæ—¶é’Ÿ
 
 	GPIO_PinAFConfig(GPIOC,GPIO_PinSource12,GPIO_AF_UART5);	
 	GPIO_PinAFConfig(GPIOD,GPIO_PinSource2 ,GPIO_AF_UART5);	 
 	
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //Êä³öÄ£Ê½
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //¸ßËÙ50MHZ
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ÉÏÀ­
-	GPIO_Init(GPIOC, &GPIO_InitStructure);  		          //³õÊ¼»¯
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //å¤ç”¨æ¨¡å¼
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //é€Ÿåº¦50MHZ
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ä¸Šæ‹‰
+	GPIO_Init(GPIOC, &GPIO_InitStructure);  		          //åˆå§‹åŒ–
 
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //Êä³öÄ£Ê½
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //¸ßËÙ50MHZ
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ÉÏÀ­
-	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //³õÊ¼»¯
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_AF;            //å¤ç”¨æ¨¡å¼
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;          //æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;       //é€Ÿåº¦50MHZ
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_UP;            //ä¸Šæ‹‰
+	GPIO_Init(GPIOD, &GPIO_InitStructure);  		          //åˆå§‹åŒ–
 	
-  //UsartNVIC configuration //UsartNVICÅäÖÃ
+  //UsartNVIC configuration //UsartNVICé…ç½®
   NVIC_InitStructure.NVIC_IRQChannel = UART5_IRQn;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Preempt priority //æŠ¢å ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority=2 ;
-	//Preempt priority //ÇÀÕ¼ÓÅÏÈ¼¶
+	//Subpriority //å­ä¼˜å…ˆçº§
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		
-	//Enable the IRQ channel //IRQÍ¨µÀÊ¹ÄÜ	
+	//Enable the IRQ channel //IRQé€šé“ä½¿èƒ½
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;	
   //Initialize the VIC register with the specified parameters 
-	//¸ù¾İÖ¸¶¨µÄ²ÎÊı³õÊ¼»¯VIC¼Ä´æÆ÷		
+	//ç”¨æŒ‡å®šçš„å‚æ•°åˆå§‹åŒ–VICå¯„å­˜å™¨
 	NVIC_Init(&NVIC_InitStructure);
 	
-  //USART Initialization Settings ³õÊ¼»¯ÉèÖÃ
-	USART_InitStructure.USART_BaudRate = bound; //Port rate //´®¿Ú²¨ÌØÂÊ
-	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //×Ö³¤Îª8Î»Êı¾İ¸ñÊ½
-	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //Ò»¸öÍ£Ö¹
-	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //ÎŞÆæÅ¼Ğ£ÑéÎ»
-	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //ÎŞÓ²¼şÊı¾İÁ÷¿ØÖÆ
-	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //ÊÕ·¢Ä£Ê½
-  USART_Init(UART5, &USART_InitStructure);      //Initialize serial port 5 //³õÊ¼»¯´®¿Ú5
-  USART_ITConfig(UART5, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //¿ªÆô´®¿Ú½ÓÊÜÖĞ¶Ï
-  USART_Cmd(UART5, ENABLE);                     //Enable serial port 5 //Ê¹ÄÜ´®¿Ú5
+  //USART Initialization Settings //åˆå§‹åŒ–è®¾ç½®
+	USART_InitStructure.USART_BaudRate = bound; //Port rate //ä¸²å£æ³¢ç‰¹ç‡
+	USART_InitStructure.USART_WordLength = USART_WordLength_8b; //The word length is 8 bit data format //å­—é•¿ä¸º8ä½æ•°æ®æ ¼å¼
+	USART_InitStructure.USART_StopBits = USART_StopBits_1; //A stop bit //ä¸€ä¸ªåœæ­¢ä½
+	USART_InitStructure.USART_Parity = USART_Parity_No; //Prosaic parity bits //æ— å¥‡å¶æ ¡éªŒä½
+	USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None; //No hardware data flow control //æ— ç¡¬ä»¶æ•°æ®æµæ§åˆ¶
+	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	//Sending and receiving mode //æ”¶å‘æ¨¡å¼
+  USART_Init(UART5, &USART_InitStructure);      //Initialize serial port 5 //åˆå§‹åŒ–ä¸²å£5
+  USART_ITConfig(UART5, USART_IT_RXNE, ENABLE); //Open the serial port to accept interrupts //å¼€å¯ä¸²å£æ¥æ”¶ä¸­æ–­
+  USART_Cmd(UART5, ENABLE);                     //Enable serial port 5 //ä½¿èƒ½ä¸²å£5
 }
+
 /**************************************************************************
 Function: Serial port 1 receives interrupted
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú1½ÓÊÕÖĞ¶Ï
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ »Ø Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£1æ¥æ”¶ä¸­æ–­
+å…¥å£å‚æ•°ï¼šæ— 
+è¿” å› å€¼ï¼šæ— 
 **************************************************************************/
 int USART1_IRQHandler(void)
 {	
-	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) //Check if data is received //ÅĞ¶ÏÊÇ·ñ½ÓÊÕµ½Êı¾İ
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET) //Check if data is received //åˆ¤æ–­æ˜¯å¦æ¥æ”¶åˆ°æ•°æ®
 	{
 		u8 Usart_Receive;
 		static u8 Count;
 		static u8 rxbuf[11];
 		int check=0,error=1,i;
 		
-		Usart_Receive = USART_ReceiveData(USART1); //Read the data //¶ÁÈ¡Êı¾İ
+		Usart_Receive = USART_ReceiveData(USART1); //Read the data //è¯»å–æ•°æ®
 		if(Time_count<CONTROL_DELAY)
 			// Data is not processed until 10 seconds after startup
-		  //¿ª»ú10ÃëÇ°²»´¦ÀíÊı¾İ
+		  //å¯åŠ¨10ç§’å‰ä¸å¤„ç†æ•°æ®
 			return 0;	
 			
 		//Fill the array with serial data
-		//´®¿ÚÊı¾İÌîÈëÊı×é
+		//å°†ä¸²å£æ•°æ®å¡«å…¥æ•°ç»„
     rxbuf[Count]=Usart_Receive;  
 		
 		//Ensure that the first data in the array is FRAME_HEADER
-		//È·±£Êı×éµÚÒ»¸öÊı¾İÎªFRAME_HEADER
+		//ç¡®ä¿æ•°ç»„ç¬¬ä¸€ä¸ªæ•°æ®ä¸ºFRAME_HEADER
     if(Usart_Receive == FRAME_HEADER||Count>0) 
 			Count++; 
 		else 
 			Count=0;
 		
-		if (Count == 11) //Verify the length of the packet //ÑéÖ¤Êı¾İ°üµÄ³¤¶È
+		if (Count == 11) //Verify the length of the packet //éªŒè¯æ•°æ®åŒ…çš„é•¿åº¦
 		{   
-				Count=0; //Prepare for the serial port data to be refill into the array //Îª´®¿ÚÊı¾İÖØĞÂÌîÈëÊı×é×ö×¼±¸
-				if(rxbuf[10] == FRAME_TAIL) //Verify the frame tail of the packet //ÑéÖ¤Êı¾İ°üµÄÖ¡Î²
+				Count=0; //Prepare for the serial port data to be refill into the array //ä¸ºä¸²å£æ•°æ®é‡æ–°å¡«å…¥æ•°ç»„åšå‡†å¤‡
+				if(rxbuf[10] == FRAME_TAIL) //Verify the frame tail of the packet //éªŒè¯æ•°æ®åŒ…çš„å¸§å°¾
 				{			
 					for(i=0; i<9; i++)
 					{
 						//XOR bit check, used to detect data error
-						//Òì»òÎ»Ğ£Ñé£¬ÓÃÓÚ¼ì²âÊı¾İÊÇ·ñ³ö´í
+						//å¼‚æˆ–ä½æ ¡éªŒï¼Œç”¨äºæ£€æµ‹æ•°æ®æ˜¯å¦å‡ºé”™
 						check=rxbuf[i]^check; 
 					}
 					if(check==rxbuf[9]) 
 						//XOR bit check successful
-					  //Òì»òÎ»Ğ£Ñé³É¹¦
+					  //å¼‚æˆ–ä½æ ¡éªŒæˆåŠŸ
 					  error=0; 
 					
 					if(error==0)	 
@@ -493,7 +495,7 @@ int USART1_IRQHandler(void)
             if(Usart1_ON_Flag==0)
 						{	
 							//Serial port 1 controls flag position 1, other flag position 0
-							//´®¿Ú1¿ØÖÆ±êÖ¾Î»ÖÃ1£¬ÆäËü±êÖ¾Î»ÖÃ0
+							//ä¸²å£1æ§åˆ¶æ ‡å¿—ä½ç½®1ï¼Œå…¶ä»–æ ‡å¿—ä½ç½®0
 							//Usart_ON_Flag=1;
 							Usart1_ON_Flag=1;
 							APP_ON_Flag=0;
@@ -503,7 +505,7 @@ int USART1_IRQHandler(void)
 						}		
 		
 						//Calculate the 3-axis target velocity from the serial data, which is divided into 8-bit high and 8-bit low units mm/s
-						//´Ó´®¿ÚÊı¾İÇóÈıÖáÄ¿±êËÙ¶È£¬·Ö¸ß8Î»ºÍµÍ8Î» µ¥Î»mm/s
+						//ä»ä¸²å£æ•°æ®è®¡ç®—ä¸‰è½´ç›®æ ‡é€Ÿåº¦ï¼Œåˆ†é«˜8ä½å’Œä½8ä½ï¼Œå•ä½mm/s
 						Move_X=XYZ_Target_Speed_transition(rxbuf[3],rxbuf[4]);
 						Move_Y=XYZ_Target_Speed_transition(rxbuf[5],rxbuf[6]);
 						Vz    =XYZ_Target_Speed_transition(rxbuf[7],rxbuf[8]);
@@ -521,50 +523,51 @@ int USART1_IRQHandler(void)
 	}
 		return 0;	
 }
+
 /**************************************************************************
-Function: Refresh the OLED screen
+Function: Serial port 2 receives interrupted
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú2½ÓÊÕÖĞ¶Ï
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£2æ¥æ”¶ä¸­æ–­
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 int USART2_IRQHandler(void)
 {	
 	int Usart_Receive;
-	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) //Check if data is received //ÅĞ¶ÏÊÇ·ñ½ÓÊÕµ½Êı¾İ
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET) //Check if data is received //åˆ¤æ–­æ˜¯å¦æ¥æ”¶åˆ°æ•°æ®
 	{	      
 		static u8 Flag_PID,i,j,Receive[50],Last_Usart_Receive;
 		static float Data;
 				
-		Usart_Receive=USART2->DR; //Read the data //¶ÁÈ¡Êı¾İ
+		Usart_Receive=USART2->DR; //Read the data //è¯»å–æ•°æ®
 		
 		if(Deviation_Count<CONTROL_DELAY)
 			// Data is not processed until 10 seconds after startup
-		  //¿ª»ú10ÃëÇ°²»´¦ÀíÊı¾İ
+		  //å¯åŠ¨10ç§’å‰ä¸å¤„ç†æ•°æ®
 		  return 0;	
 
 		if(Usart_Receive==0x41&&Last_Usart_Receive==0x41&&APP_ON_Flag==0)
 			//10 seconds after startup, press the forward button of APP to enter APP control mode
 		  //The APP controls the flag position 1 and the other flag position 0
-			//¿ª»ú10ÃëÖ®ºó£¬°´ÏÂAPPµÄÇ°½ø¼ü½øÈëAPP¿ØÖÆÄ£Ê½
-		  //APP¿ØÖÆ±êÖ¾Î»ÖÃ1£¬ÆäËü±êÖ¾Î»ÖÃ0
+			//å¯åŠ¨10ç§’ä¹‹åï¼ŒæŒ‰ä¸‹APPå‰è¿›æŒ‰é”®è¿›å…¥APPæ§åˆ¶æ¨¡å¼
+		  //APPæ§åˆ¶æ ‡å¿—ä½ç½®1ï¼Œå…¶ä»–æ ‡å¿—ä½ç½®0
 			PS2_ON_Flag=0,Remote_ON_Flag=0,APP_ON_Flag=1,CAN_ON_Flag=0,Usart1_ON_Flag=0,Usart5_ON_Flag=0;
     Last_Usart_Receive=Usart_Receive;			
 	  
 		if(Usart_Receive==0x4B) 
 			//Enter the APP steering control interface
-		  //½øÈëAPP×ªÏò¿ØÖÆ½çÃæ
+		  //è¿›å…¥APPè½¬å‘æ§åˆ¶ç•Œé¢
 			Turn_Flag=1;  
 	  else	if(Usart_Receive==0x49||Usart_Receive==0x4A) 
       // Enter the APP direction control interface		
-			//½øÈëAPP·½Ïò¿ØÖÆ½çÃæ	
+			//è¿›å…¥APPæ–¹å‘æ§åˆ¶ç•Œé¢
 			Turn_Flag=0;	
 		
 		if(Turn_Flag==0) 
 		{
 			//App rocker control interface command
-			//APPÒ¡¸Ë¿ØÖÆ½çÃæÃüÁî
+			//APPæ‘‡æ†æ§åˆ¶ç•Œé¢å‘½ä»¤
 			if(Usart_Receive>=0x41&&Usart_Receive<=0x48)  
 			{	
 				Flag_Direction=Usart_Receive-0x40;
@@ -578,27 +581,27 @@ int USART2_IRQHandler(void)
 		else if(Turn_Flag==1)
 		{
 			//APP steering control interface command
-			//APP×ªÏò¿ØÖÆ½çÃæÃüÁî
-			if     (Usart_Receive==0x43) Flag_Left=0,Flag_Right=1; //Right rotation //ÓÒ×Ô×ª
-			else if(Usart_Receive==0x47) Flag_Left=1,Flag_Right=0; //Left rotation  //×ó×Ô×ª
+			//APPè½¬å‘æ§åˆ¶ç•Œé¢å‘½ä»¤
+			if     (Usart_Receive==0x43) Flag_Left=0,Flag_Right=1; //Right rotation //å‘å³è½¬
+			else if(Usart_Receive==0x47) Flag_Left=1,Flag_Right=0; //Left rotation  //å‘å·¦è½¬
 			else                         Flag_Left=0,Flag_Right=0;
 			if     (Usart_Receive==0x41||Usart_Receive==0x45) Flag_Direction=Usart_Receive-0x40;
 			else  Flag_Direction=0;
 		}
-		if(Usart_Receive==0x58)  RC_Velocity=RC_Velocity+100; //Accelerate the keys, +100mm/s //¼ÓËÙ°´¼ü£¬+100mm/s
-		if(Usart_Receive==0x59)  RC_Velocity=RC_Velocity-100; //Slow down buttons,   -100mm/s //¼õËÙ°´¼ü£¬-100mm/s
+		if(Usart_Receive==0x58)  RC_Velocity=RC_Velocity+100; //Accelerate the keys, +100mm/s //åŠ é€ŸæŒ‰é”®ï¼Œ+100mm/s
+		if(Usart_Receive==0x59)  RC_Velocity=RC_Velocity-100; //Slow down buttons,   -100mm/s //å‡é€ŸæŒ‰é”®ï¼Œ-100mm/s
 	  
 	 // The following is the communication with the APP debugging interface
-	 //ÒÔÏÂÊÇÓëAPPµ÷ÊÔ½çÃæÍ¨Ñ¶
-	 if(Usart_Receive==0x7B) Flag_PID=1;   //The start bit of the APP parameter instruction //APP²ÎÊıÖ¸ÁîÆğÊ¼Î»
-	 if(Usart_Receive==0x7D) Flag_PID=2;   //The APP parameter instruction stops the bit    //APP²ÎÊıÖ¸ÁîÍ£Ö¹Î»
+	 //ä»¥ä¸‹æ˜¯ä¸APPè°ƒè¯•ç•Œé¢é€šè®¯
+	 if(Usart_Receive==0x7B) Flag_PID=1;   //The start bit of the APP parameter instruction //APPå‚æ•°æŒ‡ä»¤èµ·å§‹ä½
+	 if(Usart_Receive==0x7D) Flag_PID=2;   //The APP parameter instruction stops the bit    //APPå‚æ•°æŒ‡ä»¤åœæ­¢ä½
 
-	 if(Flag_PID==1) //Collect data //²É¼¯Êı¾İ
+	 if(Flag_PID==1) //Collect data //é‡‡é›†æ•°æ®
 	 {
 		Receive[i]=Usart_Receive;
 		i++;
 	 }
-	 if(Flag_PID==2) //Analyze the data //·ÖÎöÊı¾İ
+	 if(Flag_PID==2) //Analyze the data //åˆ†ææ•°æ®
 	 {
 			if(Receive[3]==0x50) 	 PID_Send=1;
 			else  if(Receive[1]!=0x23) 
@@ -620,62 +623,63 @@ int USART2_IRQHandler(void)
 					 case 0x38:  break; 	
 				 }
       }		
-      //Relevant flag position is cleared			
-      //Ïà¹Ø±êÖ¾Î»ÇåÁã			
+      //Relevant flag position is cleared
+      //ç›¸å…³æ ‡å¿—ä½æ¸…é›¶
 			Flag_PID=0;
 			i=0;
 			j=0;
 			Data=0;
-			memset(Receive, 0, sizeof(u8)*50); //Clear the array to zero//Êı×éÇåÁã
+			memset(Receive, 0, sizeof(u8)*50); //Clear the array to zero //æ¸…ç©ºæ•°ç»„
 	 }
    if(RC_Velocity<0)   RC_Velocity=0; 	 
   }
   return 0;	
 }
+
 /**************************************************************************
 Function: Serial port 3 receives interrupted
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú3½ÓÊÕÖĞ¶Ï
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£3æ¥æ”¶ä¸­æ–­
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 int USART3_IRQHandler(void)
 {	
 	static u8 Count=0;
 	u8 Usart_Receive;
 
-	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) //Check if data is received //ÅĞ¶ÏÊÇ·ñ½ÓÊÕµ½Êı¾İ
+	if(USART_GetITStatus(USART3, USART_IT_RXNE) != RESET) //Check if data is received //åˆ¤æ–­æ˜¯å¦æ¥æ”¶åˆ°æ•°æ®
 	{
-		Usart_Receive = USART_ReceiveData(USART3);//Read the data //¶ÁÈ¡Êı¾İ
+		Usart_Receive = USART_ReceiveData(USART3);//Read the data //è¯»å–æ•°æ®
 		if(Time_count<CONTROL_DELAY)
 			// Data is not processed until 10 seconds after startup
-		  //¿ª»ú10ÃëÇ°²»´¦ÀíÊı¾İ
+		  //å¯åŠ¨10ç§’å‰ä¸å¤„ç†æ•°æ®
 		  return 0;	
 		
 		//Fill the array with serial data
-		//´®¿ÚÊı¾İÌîÈëÊı×é
+		//å°†ä¸²å£æ•°æ®å¡«å…¥æ•°ç»„
     Receive_Data.buffer[Count]=Usart_Receive;
 		
 		// Ensure that the first data in the array is FRAME_HEADER
-		//È·±£Êı×éµÚÒ»¸öÊı¾İÎªFRAME_HEADER
+		//ç¡®ä¿æ•°ç»„ç¬¬ä¸€ä¸ªæ•°æ®ä¸ºFRAME_HEADER
 		if(Usart_Receive == FRAME_HEADER||Count>0) 
 			Count++; 
 		else 
 			Count=0;
 		
-		if (Count == 11) //Verify the length of the packet //ÑéÖ¤Êı¾İ°üµÄ³¤¶È
+		if (Count == 11) //Verify the length of the packet //éªŒè¯æ•°æ®åŒ…çš„é•¿åº¦
 		{   
-				Count=0; //Prepare for the serial port data to be refill into the array //Îª´®¿ÚÊı¾İÖØĞÂÌîÈëÊı×é×ö×¼±¸
-				if(Receive_Data.buffer[10] == FRAME_TAIL) //Verify the frame tail of the packet //ÑéÖ¤Êı¾İ°üµÄÖ¡Î²
+				Count=0; //Prepare for the serial port data to be refill into the array //ä¸ºä¸²å£æ•°æ®é‡æ–°å¡«å…¥æ•°ç»„åšå‡†å¤‡
+				if(Receive_Data.buffer[10] == FRAME_TAIL) //Verify the frame tail of the packet //éªŒè¯æ•°æ®åŒ…çš„å¸§å°¾
 				{
 					//Data exclusionary or bit check calculation, mode 0 is sent data check
-					//Êı¾İÒì»òÎ»Ğ£Ñé¼ÆËã£¬Ä£Ê½0ÊÇ·¢ËÍÊı¾İĞ£Ñé
+					//æ•°æ®å¼‚æˆ–ä½æ ¡éªŒè®¡ç®—ï¼Œæ¨¡å¼0æ˜¯å‘é€æ•°æ®æ ¡éªŒ
 					if(Receive_Data.buffer[9] ==Check_Sum(9,0))	 
 				  {	
 						float Vz;						
 						//All modes flag position 0, USART3 control mode
-            //ËùÓĞÄ£Ê½±êÖ¾Î»ÖÃ0£¬ÎªUsart3¿ØÖÆÄ£Ê½						
+            //æ‰€æœ‰æ¨¡å¼æ ‡å¿—ä½ç½®0ï¼Œä¸ºUsart3æ§åˆ¶æ¨¡å¼
 						PS2_ON_Flag=0;
 						Remote_ON_Flag=0;
 						APP_ON_Flag=0;
@@ -683,7 +687,7 @@ int USART3_IRQHandler(void)
 						Usart1_ON_Flag=0;
 						Usart5_ON_Flag=0;
 						//Calculate the target speed of three axis from serial data, unit m/s
-						//´Ó´®¿ÚÊı¾İÇóÈıÖáÄ¿±êËÙ¶È£¬ µ¥Î»m/s
+						//ä»ä¸²å£æ•°æ®è®¡ç®—ä¸‰è½´ç›®æ ‡é€Ÿåº¦ï¼Œå•ä½m/s
 						Move_X=XYZ_Target_Speed_transition(Receive_Data.buffer[3],Receive_Data.buffer[4]);
 						Move_Y=XYZ_Target_Speed_transition(Receive_Data.buffer[5],Receive_Data.buffer[6]);
 						Vz    =XYZ_Target_Speed_transition(Receive_Data.buffer[7],Receive_Data.buffer[8]);
@@ -694,7 +698,8 @@ int USART3_IRQHandler(void)
 						else
 						{
 							Move_Z=XYZ_Target_Speed_transition(Receive_Data.buffer[7],Receive_Data.buffer[8]);
-						}				  }
+						}
+					}
 			}
 		}
 	} 
@@ -705,53 +710,53 @@ int USART3_IRQHandler(void)
 Function: Serial port 5 receives interrupted
 Input   : none
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú5½ÓÊÕÖĞ¶Ï
-Èë¿Ú²ÎÊı£ºÎŞ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£5æ¥æ”¶ä¸­æ–­
+å…¥å£å‚æ•°ï¼šæ— 
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 int UART5_IRQHandler(void)
 {	
 	static u8 Count=0;
 	u8 Usart_Receive;
 
-	if(USART_GetITStatus(UART5, USART_IT_RXNE) != RESET) //Check if data is received //ÅĞ¶ÏÊÇ·ñ½ÓÊÕµ½Êı¾İ
+	if(USART_GetITStatus(UART5, USART_IT_RXNE) != RESET) //Check if data is received //åˆ¤æ–­æ˜¯å¦æ¥æ”¶åˆ°æ•°æ®
 	{
-		Usart_Receive = USART_ReceiveData(UART5);//Read the data //¶ÁÈ¡Êı¾İ
+		Usart_Receive = USART_ReceiveData(UART5);//Read the data //è¯»å–æ•°æ®
 		if(Time_count<CONTROL_DELAY)
 			// Data is not processed until 10 seconds after startup
-		  //¿ª»ú10ÃëÇ°²»´¦ÀíÊı¾İ
+		  //å¯åŠ¨10ç§’å‰ä¸å¤„ç†æ•°æ®
 		  return 0;	
 		
 		//Fill the array with serial data
-		//´®¿ÚÊı¾İÌîÈëÊı×é
+		//å°†ä¸²å£æ•°æ®å¡«å…¥æ•°ç»„
     Receive_Data.buffer[Count]=Usart_Receive;
 		
 		// Ensure that the first data in the array is FRAME_HEADER
-		//È·±£Êı×éµÚÒ»¸öÊı¾İÎªFRAME_HEADER
+		//ç¡®ä¿æ•°ç»„ç¬¬ä¸€ä¸ªæ•°æ®ä¸ºFRAME_HEADER
 		if(Usart_Receive == FRAME_HEADER||Count>0) 
 			Count++; 
 		else 
 			Count=0;
 		
-		if (Count == 11) //Verify the length of the packet //ÑéÖ¤Êı¾İ°üµÄ³¤¶È
+		if (Count == 11) //Verify the length of the packet //éªŒè¯æ•°æ®åŒ…çš„é•¿åº¦
 		{   
-				Count=0; //Prepare for the serial port data to be refill into the array //Îª´®¿ÚÊı¾İÖØĞÂÌîÈëÊı×é×ö×¼±¸
-				if(Receive_Data.buffer[10] == FRAME_TAIL) //Verify the frame tail of the packet //ÑéÖ¤Êı¾İ°üµÄÖ¡Î²
+				Count=0; //Prepare for the serial port data to be refill into the array //ä¸ºä¸²å£æ•°æ®é‡æ–°å¡«å…¥æ•°ç»„åšå‡†å¤‡
+				if(Receive_Data.buffer[10] == FRAME_TAIL) //Verify the frame tail of the packet //éªŒè¯æ•°æ®åŒ…çš„å¸§å°¾
 				{
 					//Data exclusionary or bit check calculation, mode 0 is sent data check
-					//Êı¾İÒì»òÎ»Ğ£Ñé¼ÆËã£¬Ä£Ê½0ÊÇ·¢ËÍÊı¾İĞ£Ñé
+					//æ•°æ®å¼‚æˆ–ä½æ ¡éªŒè®¡ç®—ï¼Œæ¨¡å¼0æ˜¯å‘é€æ•°æ®æ ¡éªŒ
 					if(Receive_Data.buffer[9] ==Check_Sum(9,0))	 
 				  {	
 						float Vz;						
-						//All modes flag position 0, USART3 control mode
-            //ËùÓĞÄ£Ê½±êÖ¾Î»ÖÃ0£¬ÎªUsart5¿ØÖÆÄ£Ê½						
+						//All modes flag position 0, USART5 control mode
+            //æ‰€æœ‰æ¨¡å¼æ ‡å¿—ä½ç½®0ï¼Œä¸ºUsart5æ§åˆ¶æ¨¡å¼
 						PS2_ON_Flag=0;
 						Remote_ON_Flag=0;
 						APP_ON_Flag=0;
 						CAN_ON_Flag=0;
 						Usart5_ON_Flag=0;
 						//Calculate the target speed of three axis from serial data, unit m/s
-						//´Ó´®¿ÚÊı¾İÇóÈıÖáÄ¿±êËÙ¶È£¬ µ¥Î»m/s
+						//ä»ä¸²å£æ•°æ®è®¡ç®—ä¸‰è½´ç›®æ ‡é€Ÿåº¦ï¼Œå•ä½m/s
 						Move_X=XYZ_Target_Speed_transition(Receive_Data.buffer[3],Receive_Data.buffer[4]);
 						Move_Y=XYZ_Target_Speed_transition(Receive_Data.buffer[5],Receive_Data.buffer[6]);
 						Vz    =XYZ_Target_Speed_transition(Receive_Data.buffer[7],Receive_Data.buffer[8]);
@@ -762,19 +767,21 @@ int UART5_IRQHandler(void)
 						else
 						{
 							Move_Z=XYZ_Target_Speed_transition(Receive_Data.buffer[7],Receive_Data.buffer[8]);
-						}				  }
+						}
+					}
 			}
 		}
 	} 
   return 0;	
 }
+
 /**************************************************************************
 Function: After the top 8 and low 8 figures are integrated into a short type data, the unit reduction is converted
 Input   : 8 bits high, 8 bits low
 Output  : The target velocity of the robot on the X/Y/Z axis
-º¯Êı¹¦ÄÜ£º½«ÉÏÎ»»ú·¢¹ıÀ´Ä¿±êÇ°½øËÙ¶ÈVx¡¢Ä¿±ê½ÇËÙ¶ÈVz£¬×ª»»Îª°¢¿ËÂüĞ¡³µµÄÓÒÇ°ÂÖ×ª½Ç
-Èë¿Ú²ÎÊı£ºÄ¿±êÇ°½øËÙ¶ÈVx¡¢Ä¿±ê½ÇËÙ¶ÈVz£¬µ¥Î»£ºm/s£¬rad/s
-·µ»Ø  Öµ£º°¢¿ËÂüĞ¡³µµÄÓÒÇ°ÂÖ×ª½Ç£¬µ¥Î»£ºrad
+åŠŸèƒ½æè¿°ï¼šå°†ç›®æ ‡å‰è¿›é€Ÿåº¦Vxã€ç›®æ ‡è§’é€Ÿåº¦Vzï¼Œè½¬æ¢ä¸ºé˜¿å…‹æ›¼å°è½¦çš„å‰è¿›å’Œè½¬å‘è§’
+å…¥å£å‚æ•°ï¼šç›®æ ‡å‰è¿›é€Ÿåº¦Vxã€ç›®æ ‡è§’é€Ÿåº¦Vzï¼Œå•ä½ï¼šm/sã€rad/s
+è¿”å›  å€¼ï¼šé˜¿å…‹æ›¼å°è½¦çš„å‰è¿›è½¬å‘è§’ï¼Œå•ä½ï¼šrad
 **************************************************************************/
 float Vz_to_Akm_Angle(float Vx, float Vz)
 {
@@ -784,19 +791,19 @@ float Vz_to_Akm_Angle(float Vx, float Vz)
 	//Ackermann car needs to set minimum turning radius
 	//If the target speed requires a turn radius less than the minimum turn radius,
 	//This will greatly improve the friction force of the car, which will seriously affect the control effect
-	//°¢¿ËÂüĞ¡³µĞèÒªÉèÖÃ×îĞ¡×ªÍä°ë¾¶
-	//Èç¹ûÄ¿±êËÙ¶ÈÒªÇóµÄ×ªÍä°ë¾¶Ğ¡ÓÚ×îĞ¡×ªÍä°ë¾¶£¬
-	//»áµ¼ÖÂĞ¡³µÔË¶¯Ä¦²ÁÁ¦´ó´óÌá¸ß£¬ÑÏÖØÓ°Ïì¿ØÖÆĞ§¹û
+	//é˜¿å…‹æ›¼å°è½¦éœ€è¦è®¾ç½®æœ€å°è½¬å¼¯åŠå¾„
+	//å¦‚æœç›®æ ‡é€Ÿåº¦è¦æ±‚çš„è½¬å¼¯åŠå¾„å°äºæœ€å°è½¬å¼¯åŠå¾„ï¼Œ
+	//ä¼šå¯¼è‡´å°è½¦è¿åŠ¨æ‘©æ“¦åŠ›å¤§å¤§å¢åŠ ï¼Œä¸¥é‡å½±å“æ§åˆ¶æ•ˆæœ
 	Min_Turn_Radius=MINI_AKM_MIN_TURN_RADIUS;
 	
 	if(Vz!=0 && Vx!=0)
 	{
 		//If the target speed requires a turn radius less than the minimum turn radius
-		//Èç¹ûÄ¿±êËÙ¶ÈÒªÇóµÄ×ªÍä°ë¾¶Ğ¡ÓÚ×îĞ¡×ªÍä°ë¾¶
+		//å¦‚æœç›®æ ‡é€Ÿåº¦è¦æ±‚çš„è½¬å¼¯åŠå¾„å°äºæœ€å°è½¬å¼¯åŠå¾„
 		if(float_abs(Vx/Vz)<=Min_Turn_Radius)
 		{
 			//Reduce the target angular velocity and increase the turning radius to the minimum turning radius in conjunction with the forward speed
-			//½µµÍÄ¿±ê½ÇËÙ¶È£¬ÅäºÏÇ°½øËÙ¶È£¬Ìá¸ß×ªÍä°ë¾¶µ½×îĞ¡×ªÍä°ë¾¶
+			//é™ä½ç›®æ ‡è§’é€Ÿåº¦ï¼Œç»“åˆå‰è¿›é€Ÿåº¦ï¼Œå°†è½¬å¼¯åŠå¾„å¢å¤§åˆ°æœ€å°è½¬å¼¯åŠå¾„
 			if(Vz>0)
 				Vz= float_abs(Vx)/(Min_Turn_Radius);
 			else	
@@ -817,29 +824,29 @@ float Vz_to_Akm_Angle(float Vx, float Vz)
 Function: After the top 8 and low 8 figures are integrated into a short type data, the unit reduction is converted
 Input   : 8 bits high, 8 bits low
 Output  : The target velocity of the robot on the X/Y/Z axis
-º¯Êı¹¦ÄÜ£º½«ÉÏÎ»»ú·¢¹ıÀ´µÄ¸ß8Î»ºÍµÍ8Î»Êı¾İÕûºÏ³ÉÒ»¸öshortĞÍÊı¾İºó£¬ÔÙ×öµ¥Î»»¹Ô­»»Ëã
-Èë¿Ú²ÎÊı£º¸ß8Î»£¬µÍ8Î»
-·µ»Ø  Öµ£º»úÆ÷ÈËX/Y/ZÖáµÄÄ¿±êËÙ¶È
+åŠŸèƒ½æè¿°ï¼šå°†å•ä½è¿˜åŸï¼Œå°†æ•°æ®çš„é«˜8ä½å’Œä½8ä½é‡æ–°åˆæˆä¸€ä¸ªshortç±»å‹æ•°æ®åè¿›è¡Œå•ä½è¿˜åŸ
+å…¥å£å‚æ•°ï¼šé«˜8ä½ã€ä½8ä½
+è¿”å›  å€¼ï¼šæœºå™¨äººX/Y/Zè½´çš„ç›®æ ‡é€Ÿåº¦
 **************************************************************************/
 float XYZ_Target_Speed_transition(u8 High,u8 Low)
 {
 	//Data conversion intermediate variable
-	//Êı¾İ×ª»»µÄÖĞ¼ä±äÁ¿
+	//æ•°æ®è½¬æ¢ä¸­é—´å˜é‡
 	short transition; 
 	
-	//½«¸ß8Î»ºÍµÍ8Î»ÕûºÏ³ÉÒ»¸ö16Î»µÄshortĞÍÊı¾İ
+	//å°†é«˜8ä½å’Œä½8ä½åˆæˆä¸€ä¸ª16ä½çš„shortç±»å‹æ•°æ®
 	//The high 8 and low 8 bits are integrated into a 16-bit short data
 	transition=((High<<8)+Low); 
 	return 
-		transition/1000+(transition%1000)*0.001; //Unit conversion, mm/s->m/s //µ¥Î»×ª»», mm/s->m/s						
+		transition/1000+(transition%1000)*0.001; //Unit conversion, mm/s->m/s //å•ä½è½¬æ¢, mm/s->m/s
 }
 /**************************************************************************
 Function: Serial port 1 sends data
 Input   : The data to send
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú1·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÒª·¢ËÍµÄÊı¾İ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£1å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šè¦å‘é€çš„æ•°æ®
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void usart1_send(u8 data)
 {
@@ -850,9 +857,9 @@ void usart1_send(u8 data)
 Function: Serial port 2 sends data
 Input   : The data to send
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú2·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÒª·¢ËÍµÄÊı¾İ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£2å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šè¦å‘é€çš„æ•°æ®
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void usart2_send(u8 data)
 {
@@ -863,9 +870,9 @@ void usart2_send(u8 data)
 Function: Serial port 3 sends data
 Input   : The data to send
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú3·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÒª·¢ËÍµÄÊı¾İ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£3å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šè¦å‘é€çš„æ•°æ®
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void usart3_send(u8 data)
 {
@@ -877,9 +884,9 @@ void usart3_send(u8 data)
 Function: Serial port 5 sends data
 Input   : The data to send
 Output  : none
-º¯Êı¹¦ÄÜ£º´®¿Ú5·¢ËÍÊı¾İ
-Èë¿Ú²ÎÊı£ºÒª·¢ËÍµÄÊı¾İ
-·µ»Ø  Öµ£ºÎŞ
+åŠŸèƒ½æè¿°ï¼šä¸²å£5å‘é€æ•°æ®
+å…¥å£å‚æ•°ï¼šè¦å‘é€çš„æ•°æ®
+è¿”å›  å€¼ï¼šæ— 
 **************************************************************************/
 void usart5_send(u8 data)
 {
@@ -890,16 +897,16 @@ void usart5_send(u8 data)
 Function: Calculates the check bits of data to be sent/received
 Input   : Count_Number: The first few digits of a check; Mode: 0-Verify the received data, 1-Validate the sent data
 Output  : Check result
-º¯Êı¹¦ÄÜ£º¼ÆËãÒª·¢ËÍ/½ÓÊÕµÄÊı¾İĞ£Ñé½á¹û
-Èë¿Ú²ÎÊı£ºCount_Number£ºĞ£ÑéµÄÇ°¼¸Î»Êı£»Mode£º0-¶Ô½ÓÊÕÊı¾İ½øĞĞĞ£Ñé£¬1-¶Ô·¢ËÍÊı¾İ½øĞĞĞ£Ñé
-·µ»Ø  Öµ£ºĞ£Ñé½á¹û
+åŠŸèƒ½æè¿°ï¼šè®¡ç®—è¦å‘é€/æ¥æ”¶çš„æ•°æ®æ ¡éªŒä½
+å…¥å£å‚æ•°ï¼šCount_Numberï¼šæ ¡éªŒå‰å‡ ä½æ•°æ®ï¼›Modeï¼š0-å¯¹æ¥æ”¶æ•°æ®è¿›è¡Œæ ¡éªŒï¼Œ1-å¯¹å‘é€æ•°æ®è¿›è¡Œæ ¡éªŒ
+è¿”å›  å€¼ï¼šæ ¡éªŒç»“æœ
 **************************************************************************/
 u8 Check_Sum(unsigned char Count_Number,unsigned char Mode)
 {
 	unsigned char check_sum=0,k;
 	
 	//Validate the data to be sent
-	//¶ÔÒª·¢ËÍµÄÊı¾İ½øĞĞĞ£Ñé
+	//å¯¹è¦å‘é€çš„æ•°æ®è¿›è¡Œæ ¡éªŒ
 	if(Mode==1)
 	for(k=0;k<Count_Number;k++)
 	{
@@ -907,7 +914,7 @@ u8 Check_Sum(unsigned char Count_Number,unsigned char Mode)
 	}
 	
 	//Verify the data received
-	//¶Ô½ÓÊÕµ½µÄÊı¾İ½øĞĞĞ£Ñé
+	//å¯¹æ¥æ”¶åˆ°çš„æ•°æ®è¿›è¡Œæ ¡éªŒ
 	if(Mode==0)
 	for(k=0;k<Count_Number;k++)
 	{
@@ -915,9 +922,3 @@ u8 Check_Sum(unsigned char Count_Number,unsigned char Mode)
 	}
 	return check_sum;
 }
-
-
-
-
-
-
