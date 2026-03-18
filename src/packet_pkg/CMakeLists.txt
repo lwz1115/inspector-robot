@@ -73,6 +73,7 @@ target_link_libraries(serial_node ${catkin_LIBRARIES})
 catkin_install_python(PROGRAMS
   scripts/packet_node.py
   scripts/jetbot_keyboard.py
+  scripts/battery_monitor.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

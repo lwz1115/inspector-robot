@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- serial_node (C++) -->
+    <node pkg="packet_pkg" type="serial_node" name="jetbot_serial_control"
+          output="screen" respawn="true">
+        <param name="port"     value="/dev/ttyJETBOT"/>
+        <param name="baudrate" value="115200"/>
+    </node>
+
+    <!-- battery_monitor (Python) -->
+    <node pkg="packet_pkg" type="battery_monitor.py" name="battery_monitor"
+          output="screen" respawn="true"/>
+</launch>
