@@ -253,6 +253,30 @@ public class MqttRobotSubscriber {
                     }
                 }
 
+                // 温湿度数据
+                if (dataNode.has("env")) {
+                    JsonNode envNode = dataNode.get("env");
+                    if (envNode.has("temperature")) robotData.setTemperature(envNode.get("temperature").asDouble());
+                    if (envNode.has("humidity")) robotData.setHumidity(envNode.get("humidity").asDouble());
+                }
+
+                // 烟雾数据
+                if (dataNode.has("smoke")) {
+                    JsonNode smokeNode = dataNode.get("smoke");
+                    if (smokeNode.has("value")) {
+                        int smokeValue = smokeNode.get("value").asInt();
+                        robotData.setSmokeValue(smokeValue);
+                        // 根据烟雾值设置告警信息
+                        if (smokeValue >= 500) {
+                            robotData.setAlertMessage("⚠️ 明显烟雾/明火！烟雾值: " + smokeValue + "，较多烟雾或靠近火源，请立即处理！");
+                        } else if (smokeValue >= 200) {
+                            robotData.setAlertMessage("⚠️ 轻微烟雾，烟雾值: " + smokeValue + "，检测到打火机气体或香烟烟雾");
+                        } else {
+                            robotData.setAlertMessage(null); // 50~150 洁净空气，无告警
+                        }
+                    }
+                }
+
                 // 检查是否有目的地确认消息
                 if (dataNode.has("destination_status")) {
                     JsonNode statusNode = dataNode.get("destination_status");

@@ -31,6 +31,9 @@ _lock = threading.Lock()
 _gps  = {}          # 解析后的GPS字段
 _volt = 0.0         # 电压
 _face = ""          # 最近识别到的人名
+_temp = 0.0         # 温度 (℃)
+_humi = 0.0         # 湿度 (%)
+_smoke = 0          # 烟雾值
 
 
 def gps_callback(msg):
@@ -68,6 +71,30 @@ def face_callback(msg):
             _face = name
 
 
+def temp_humi_callback(msg):
+    """解析温湿度，格式: TEMP:25.3,HUM:60.5"""
+    global _temp, _humi
+    raw = msg.data
+    try:
+        parts = raw.split(",")
+        for p in parts:
+            if p.startswith("TEMP:"):
+                with _lock:
+                    _temp = round(float(p[5:]), 1)
+            elif p.startswith("HUM:"):
+                with _lock:
+                    _humi = round(float(p[4:]), 1)
+    except Exception as e:
+        rospy.logwarn("温湿度解析失败: %s", e)
+
+
+def smoke_callback(msg):
+    """烟雾传感器原始值"""
+    global _smoke
+    with _lock:
+        _smoke = int(msg.data)
+
+
 def push_loop():
     """定时推送线程"""
     rate = rospy.Rate(1.0 / PUSH_INTERVAL)
@@ -77,6 +104,9 @@ def push_loop():
                 "device_id": DEVICE_ID,
                 "timestamp": int(time.time() * 1000),
                 "voltage":   _volt,
+                "temperature": _temp,
+                "humidity":    _humi,
+                "smoke_value": _smoke,
             }
             payload.update(_gps)
             if _face:
@@ -100,6 +130,8 @@ def main():
     rospy.Subscriber("/gps_data",             String,  gps_callback)
     rospy.Subscriber("/battery_voltage",      Float32, voltage_callback)
     rospy.Subscriber("/recognized_face_name", String,  face_callback)
+    rospy.Subscriber("/temp_humi_data",       String,  temp_humi_callback)
+    rospy.Subscriber("/smoke_value",          Float32, smoke_callback)
 
     t = threading.Thread(target=push_loop)
     t.daemon = True

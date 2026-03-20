@@ -1,6 +1,6 @@
 package com.example.find_robot.controller;
 
-import com.example.find_robot.service.MqttRobotSubscriber;
+import com.example.find_robot.service.RobotHttpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 public class DestinationController {
 
     @Autowired
-    private MqttRobotSubscriber mqttRobotSubscriber;
+    private RobotHttpService robotHttpService;
 
     /**
-     * 设置目的地坐标
+     * 设置目的地坐标，通过 HTTP 推送到 Jetson
      */
     @PostMapping("/set")
     public ResponseEntity<?> setDestination(
@@ -23,7 +23,7 @@ public class DestinationController {
             @RequestParam(required = false) String name) {
 
         try {
-            boolean success = mqttRobotSubscriber.publishDestination(longitude, latitude, name);
+            boolean success = robotHttpService.publishDestination(longitude, latitude, name);
 
             if (success) {
                 return ResponseEntity.ok().body(new ApiResponse(true,
@@ -31,7 +31,7 @@ public class DestinationController {
                         String.format("经度: %.6f, 纬度: %.6f", longitude, latitude)));
             } else {
                 return ResponseEntity.status(500).body(new ApiResponse(false,
-                        "发送目的地坐标失败，请检查MQTT连接", null));
+                        "发送目的地坐标失败，请检查 Jetson 是否在线", null));
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ApiResponse(false,
@@ -40,16 +40,15 @@ public class DestinationController {
     }
 
     /**
-     * 检查MQTT连接状态
+     * 检查连接状态
      */
     @GetMapping("/status")
-    public ResponseEntity<?> getMqttStatus() {
+    public ResponseEntity<?> getStatus() {
         return ResponseEntity.ok().body(new ApiResponse(true,
-                mqttRobotSubscriber.getConnectionInfo(),
-                mqttRobotSubscriber.isConnected()));
+                robotHttpService.getConnectionInfo(),
+                robotHttpService.isConnected()));
     }
 
-    // 响应包装类
     static class ApiResponse {
         private boolean success;
         private String message;
@@ -61,7 +60,6 @@ public class DestinationController {
             this.data = data;
         }
 
-        // getters and setters
         public boolean isSuccess() { return success; }
         public void setSuccess(boolean success) { this.success = success; }
         public String getMessage() { return message; }

@@ -5,7 +5,6 @@
 import rospy
 import time
 import serial
-import re
 import threading
 import math
 from std_msgs.msg import String
@@ -152,77 +151,67 @@ def Convert_to_degrees(in_data1, in_data2):
 
 
 def GPS_read(ser):
-    """读取并解析GPS NMEA数据"""
+    """读取并解析GPS NMEA数据（readline按行读取，split解析）"""
     global utctime, lat, ulat, lon, ulon, numSv, msl, cogt, cogm, sog, kph, gps_t
     global lat_gcj, lon_gcj
-    
+
     if not ser.inWaiting():
         return False
-        
+
     try:
-        if ser.read(1) == b'G':
-            if ser.inWaiting():
-                if ser.read(1) == b'N':
-                    if ser.inWaiting():
-                        choice = ser.read(1)
-                        if choice == b'G':
-                            if ser.inWaiting():
-                                if ser.read(1) == b'G':
-                                    if ser.inWaiting():
-                                        if ser.read(1) == b'A':
-                                            # 读取GGA数据
-                                            GGA = ser.read(70)
-                                            GGA_g = re.findall(r"\w+(?=,)|(?<=,)\w+", str(GGA))
-                                            if len(GGA_g) < 13:
-                                                rospy.logdebug("GPS no fix")
-                                                with data_lock:
-                                                    gps_t = 0
-                                                return False
-                                            else:
-                                                with data_lock:
-                                                    utctime = GGA_g[0]
-                                                    
-                                                    # 转换为WGS-84度格式
-                                                    wgs_lat = Convert_to_degrees(str(GGA_g[2]), str(GGA_g[3]))
-                                                    wgs_lon = Convert_to_degrees(str(GGA_g[5]), str(GGA_g[6]))
-                                                    
-                                                    # 转换为GCJ-02（高德地图坐标）
-                                                    gcj_lat, gcj_lon = CoordinateTransform.wgs84_to_gcj02(wgs_lat, wgs_lon)
-                                                    
-                                                    # 保存两种坐标
-                                                    lat = "%.8f" % wgs_lat  # WGS-84纬度
-                                                    lon = "%.8f" % wgs_lon  # WGS-84经度
-                                                    lat_gcj = "%.8f" % gcj_lat  # GCJ-02纬度
-                                                    lon_gcj = "%.8f" % gcj_lon  # GCJ-02经度
-                                                    
-                                                    ulat = GGA_g[4]
-                                                    ulon = GGA_g[7]
-                                                    numSv = GGA_g[9]
-                                                    msl = GGA_g[12] + '.' + GGA_g[13] + GGA_g[14]
-                                                    gps_t = 1
-                                                return True
-                        elif choice == b'V':
-                            if ser.inWaiting():
-                                if ser.read(1) == b'T':
-                                    if ser.inWaiting():
-                                        if ser.read(1) == b'G':
-                                            with data_lock:
-                                                if gps_t == 1:
-                                                    VTG = ser.read(40)
-                                                    VTG_g = re.findall(r"\w+(?=,)|(?<=,)\w+", str(VTG))
-                                                    cogt = VTG_g[0] + '.' + VTG_g[1] + 'T'
-                                                    if VTG_g[3] == 'M':
-                                                        cogm = '0.00'
-                                                        sog = VTG_g[4] + '.' + VTG_g[5]
-                                                        kph = VTG_g[7] + '.' + VTG_g[8]
-                                                    elif VTG_g[3] != 'M':
-                                                        cogm = VTG_g[3] + '.' + VTG_g[4]
-                                                        sog = VTG_g[6] + '.' + VTG_g[7]
-                                                        kph = VTG_g[9] + '.' + VTG_g[10]
-                                            return True
+        line = ser.readline().decode('ascii', errors='ignore').strip()
+        if not line.startswith('$'):
+            return False
+
+        fields = line.split(',')
+        # 去掉最后一个字段的校验和部分（*XX）
+        if fields:
+            fields[-1] = fields[-1].split('*')[0]
+
+        sentence_type = fields[0]  # e.g. $GNGGA, $GNVTG
+
+        if sentence_type in ('$GNGGA', '$GPGGA') and len(fields) >= 14:
+            fix_type = fields[6]
+            if fix_type == '0' or fix_type == '':
+                rospy.logdebug("GPS no fix")
+                with data_lock:
+                    gps_t = 0
+                return False
+
+            with data_lock:
+                utctime = fields[1]
+
+                # 转换为WGS-84度格式
+                wgs_lat = Convert_to_degrees(fields[2], fields[3])
+                wgs_lon = Convert_to_degrees(fields[4], fields[5])
+
+                # 转换为GCJ-02（高德地图坐标）
+                gcj_lat, gcj_lon = CoordinateTransform.wgs84_to_gcj02(wgs_lat, wgs_lon)
+
+                lat = "%.8f" % wgs_lat
+                lon = "%.8f" % wgs_lon
+                lat_gcj = "%.8f" % gcj_lat
+                lon_gcj = "%.8f" % gcj_lon
+
+                ulat = fields[3]   # N/S
+                ulon = fields[5]   # E/W
+                numSv = fields[7]
+                msl = fields[9] + fields[10] + fields[11]  # 海拔+单位
+                gps_t = 1
+            return True
+
+        elif sentence_type in ('$GNVTG', '$GPVTG') and len(fields) >= 9:
+            with data_lock:
+                if gps_t == 1:
+                    cogt = fields[1] + 'T'
+                    cogm = fields[3] if fields[3] else '0.00'
+                    sog = fields[5]   # 速度（节）
+                    kph = fields[7]   # 速度（km/h）
+            return True
+
     except Exception as e:
         rospy.logwarn("GPS parsing error: %s", str(e))
-        
+
     return False
 
 
@@ -311,10 +300,9 @@ def main():
     rospy.loginfo("GPS节点运行中，等待卫星定位...")
     
     try:
-        # 主循环 - 读取数据
+        # 主循环 - 读取数据（readline阻塞等待，无需sleep）
         while not rospy.is_shutdown():
             GPS_read(ser)
-            time.sleep(0.01)
             
     except KeyboardInterrupt:
         rospy.loginfo("键盘中断")

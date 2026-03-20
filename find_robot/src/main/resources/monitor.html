@@ -184,6 +184,9 @@
       <div class="data-card"><div class="data-label">机器人电量</div><div class="data-value" id="batteryLevel">0<span class="data-unit">%</span></div></div>
       <div class="data-card"><div class="data-label">当前速度</div><div class="data-value" id="currentSpeed">0<span class="data-unit">km/h</span></div></div>
       <div class="data-card"><div class="data-label">海拔高度</div><div class="data-value" id="altitude">0<span class="data-unit">m</span></div></div>
+      <div class="data-card"><div class="data-label">温度</div><div class="data-value" id="temperature">--<span class="data-unit">℃</span></div></div>
+      <div class="data-card"><div class="data-label">湿度</div><div class="data-value" id="humidity">--<span class="data-unit">%</span></div></div>
+      <div class="data-card"><div class="data-label">烟雾值</div><div class="data-value" id="smokeValue">--</div><div class="data-label" id="smokeStatus" style="margin-top:4px">--</div></div>
     </div>
     <div style="text-align:center;color:#8ba0b8;font-size:12px;margin-top:10px">
       数据更新频率: 3秒 | 最后更新: <span id="lastUpdateTime">--</span>
@@ -417,6 +420,33 @@
         document.getElementById('currentSpeed').textContent = (robot.speed || 0).toFixed(1);
         document.getElementById('altitude').textContent = (robot.altitude || 0).toFixed(1);
         document.getElementById('voltage').textContent = (robot.voltage || 0).toFixed(2);
+
+        // 温湿度
+        document.getElementById('temperature').textContent = robot.temperature != null ? robot.temperature.toFixed(1) : '--';
+        document.getElementById('humidity').textContent = robot.humidity != null ? robot.humidity.toFixed(1) : '--';
+
+        // 烟雾值及状态
+        const smokeEl = document.getElementById('smokeValue');
+        const smokeStatusEl = document.getElementById('smokeStatus');
+        if (robot.smokeValue != null) {
+          smokeEl.textContent = robot.smokeValue;
+          if (robot.smokeValue >= 500) {
+            smokeEl.style.color = '#ff4d4f';
+            smokeStatusEl.textContent = '明显烟雾/明火';
+            smokeStatusEl.style.color = '#ff4d4f';
+          } else if (robot.smokeValue >= 200) {
+            smokeEl.style.color = '#faad14';
+            smokeStatusEl.textContent = '轻微烟雾';
+            smokeStatusEl.style.color = '#faad14';
+          } else {
+            smokeEl.style.color = '#52c41a';
+            smokeStatusEl.textContent = '洁净空气';
+            smokeStatusEl.style.color = '#52c41a';
+          }
+        } else {
+          smokeEl.textContent = '--';
+          smokeStatusEl.textContent = '--';
+        }
       }
 
       html += `
@@ -428,6 +458,8 @@
           <div>📍 位置: ${robot.longitude?.toFixed(6) || '0.000000'}, ${robot.latitude?.toFixed(6) || '0.000000'}</div>
           <div>🚀 速度: ${(robot.speed || 0).toFixed(1)} km/h</div>
           <div>🔋 电压: ${(robot.voltage || 0).toFixed(2)} V</div>
+          ${robot.temperature != null ? `<div>🌡️ 温度: ${robot.temperature.toFixed(1)} ℃ &nbsp; 💧 湿度: ${robot.humidity != null ? robot.humidity.toFixed(1) : '--'} %</div>` : ''}
+          ${robot.smokeValue != null ? `<div style="color:${robot.smokeValue >= 500 ? '#ff4d4f' : robot.smokeValue >= 200 ? '#faad14' : '#52c41a'}">💨 烟雾: ${robot.smokeValue} (${robot.smokeValue >= 500 ? '明显烟雾/明火' : robot.smokeValue >= 200 ? '轻微烟雾' : '洁净空气'})</div>` : ''}
           <div>⏰ 时间: ${updateTime} <span style="font-size:11px;color:#8ba0b8">${freshness}</span></div>
           ${robot.alertMessage ? `<div style="color:#ff4d4f;font-size:11px;margin-top:5px">🚨 ${robot.alertMessage}</div>` : ''}
           <div class="battery-bar"><div class="battery-fill ${batteryClass}" style="width:${batteryLevel}%"></div></div>

@@ -39,6 +39,17 @@ public class RobotData {
     @TableField("voltage")
     private Double voltage;
 
+    // 温湿度字段
+    @TableField("temperature")
+    private Double temperature;
+
+    @TableField("humidity")
+    private Double humidity;
+
+    // 烟雾值
+    @TableField("smoke_value")
+    private Integer smokeValue;
+
     // 警报字段
     @TableField("alert_message")
     private String alertMessage;
@@ -72,6 +83,9 @@ public class RobotData {
                 ", altitude=" + altitude +
                 ", speed=" + speed +
                 ", voltage=" + voltage +
+                ", temperature=" + temperature +
+                ", humidity=" + humidity +
+                ", smokeValue=" + smokeValue +
                 ", alertMessage='" + alertMessage + '\'' +
                 ", personCount=" + personCount +
                 ", batteryLevel=" + batteryLevel +

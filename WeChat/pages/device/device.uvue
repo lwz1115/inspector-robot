@@ -1,61 +1,171 @@
 <template>
-  <view class="page" 
+  <view class="page"
         :style="{ transform: `translateX(${translateX}px)`, transition: 'transform 0.1s ease' }"
-        @touchstart="onTouchStart" 
-        @touchmove="onTouchMove" 
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
         @touchend="onTouchEnd">
-    <!-- 只保留滑动效果，原内容不变 -->
-    <text>设备页面</text>
+
+    <!-- 顶部标题栏 -->
+    <view class="header">
+      <view class="header-left">
+        <text class="header-title">设备监控</text>
+        <view class="status-dot" :class="isOnline ? 'online' : 'offline'"></view>
+        <text class="status-text">{{ isOnline ? '在线' : '离线' }}</text>
+      </view>
+      <view class="refresh-btn" @click="fetchData">
+        <text class="refresh-icon" :class="{ spinning: loading }">↻</text>
+      </view>
+    </view>
+
+    <!-- 下拉刷新提示 -->
+    <view class="update-tip">
+      <text class="update-tip-text">最后更新：{{ lastUpdateTime || '--' }}</text>
+    </view>
+
+    <scroll-view scroll-y class="scroll-content">
+
+      <!-- 设备信息卡片 -->
+      <view class="card device-card">
+        <view class="card-header">
+          <text class="card-icon">🤖</text>
+          <text class="card-title">设备信息</text>
+        </view>
+        <view class="device-info-row">
+          <text class="device-id">{{ robotData.deviceId || '--' }}</text>
+          <view class="battery-tag" :class="batteryTagClass">
+            <text class="battery-tag-text">{{ robotData.batteryLevel != null ? robotData.batteryLevel + '%' : '--' }}</text>
+          </view>
+        </view>
+        <!-- 电量进度条 -->
+        <view class="battery-bar-bg">
+          <view class="battery-bar-fill" :class="batteryTagClass" :style="{ width: (robotData.batteryLevel || 0) + '%' }"></view>
+        </view>
+        <view class="device-meta">
+          <text class="meta-text">电压：{{ robotData.voltage != null ? robotData.voltage.toFixed(2) + ' V' : '--' }}</text>
+          <text class="meta-text">速度：{{ robotData.speed != null ? robotData.speed.toFixed(1) + ' km/h' : '--' }}</text>
+        </view>
+      </view>
+
+      <!-- 环境数据 -->
+      <view class="section-title">
+        <text class="section-title-text">🌡️ 环境数据</text>
+      </view>
+      <view class="grid-2">
+        <!-- 温度 -->
+        <view class="metric-card">
+          <text class="metric-icon">🌡️</text>
+          <text class="metric-label">温度</text>
+          <view class="metric-value-row">
+            <text class="metric-value" :style="{ color: tempColor }">
+              {{ robotData.temperature != null ? robotData.temperature.toFixed(1) : '--' }}
+            </text>
+            <text class="metric-unit">℃</text>
+          </view>
+          <view class="metric-bar-bg">
+            <view class="metric-bar-fill temp-fill" :style="{ width: tempPercent + '%' }"></view>
+          </view>
+        </view>
+
+        <!-- 湿度 -->
+        <view class="metric-card">
+          <text class="metric-icon">💧</text>
+          <text class="metric-label">湿度</text>
+          <view class="metric-value-row">
+            <text class="metric-value" :style="{ color: humiColor }">
+              {{ robotData.humidity != null ? robotData.humidity.toFixed(1) : '--' }}
+            </text>
+            <text class="metric-unit">%</text>
+          </view>
+          <view class="metric-bar-bg">
+            <view class="metric-bar-fill humi-fill" :style="{ width: (robotData.humidity || 0) + '%' }"></view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 烟雾检测 -->
+      <view class="smoke-card" :class="smokeCardClass">
+        <view class="smoke-header">
+          <text class="smoke-icon">💨</text>
+          <text class="smoke-title">烟雾检测</text>
+          <view class="smoke-badge" :class="smokeBadgeClass">
+            <text class="smoke-badge-text">{{ smokeStatusText }}</text>
+          </view>
+        </view>
+        <view class="smoke-body">
+          <view class="smoke-value-wrap">
+            <text class="smoke-value" :style="{ color: smokeColor }">{{ robotData.smokeValue != null ? robotData.smokeValue : '--' }}</text>
+            <text class="smoke-unit">ADC</text>
+          </view>
+          <view class="smoke-scale">
+            <view class="scale-item safe">
+              <text class="scale-label">洁净</text>
+              <text class="scale-range">50~150</text>
+            </view>
+            <view class="scale-item warn">
+              <text class="scale-label">轻微</text>
+              <text class="scale-range">200~400</text>
+            </view>
+            <view class="scale-item danger">
+              <text class="scale-label">危险</text>
+              <text class="scale-range">500+</text>
+            </view>
+          </view>
+          <view class="smoke-bar-bg">
+            <view class="smoke-bar-fill" :style="{ width: smokePercent + '%', background: smokeColor }"></view>
+          </view>
+        </view>
+        <!-- 告警信息 -->
+        <view v-if="robotData.alertMessage" class="alert-banner">
+          <text class="alert-text">⚠️ {{ robotData.alertMessage }}</text>
+        </view>
+      </view>
+
+      <!-- GPS 定位 -->
+      <view class="section-title">
+        <text class="section-title-text">📡 GPS 定位</text>
+      </view>
+      <view class="grid-2">
+        <view class="metric-card">
+          <text class="metric-icon">📍</text>
+          <text class="metric-label">经度</text>
+          <text class="metric-value coord-value">{{ robotData.longitude != null ? robotData.longitude.toFixed(6) : '--' }}</text>
+        </view>
+        <view class="metric-card">
+          <text class="metric-icon">📍</text>
+          <text class="metric-label">纬度</text>
+          <text class="metric-value coord-value">{{ robotData.latitude != null ? robotData.latitude.toFixed(6) : '--' }}</text>
+        </view>
+        <view class="metric-card">
+          <text class="metric-icon">🛰️</text>
+          <text class="metric-label">卫星数</text>
+          <view class="metric-value-row">
+            <text class="metric-value">{{ robotData.satellites != null ? robotData.satellites : '--' }}</text>
+            <text class="metric-unit">颗</text>
+          </view>
+        </view>
+        <view class="metric-card">
+          <text class="metric-icon">⛰️</text>
+          <text class="metric-label">海拔</text>
+          <view class="metric-value-row">
+            <text class="metric-value">{{ robotData.altitude != null ? robotData.altitude.toFixed(1) : '--' }}</text>
+            <text class="metric-unit">m</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 人员检测 -->
+      <view class="person-card">
+        <view class="person-left">
+          <text class="person-icon">👥</text>
+          <view>
+            <text class="person-label">检测到人员</text>
+            <text class="person-sub">实时人脸识别</text>
+          </view>
+        </view>
+        <text class="person-count">{{ robotData.personCount != null ? robotData.personCount : '--' }}</text>
+      </view>
+
+      <view style="height: 40rpx;"></view>
+    </scroll-view>
   </view>
 </template>
-
-<script>
-import tabSwipe from '@/mixins/tabSwipe.js'
-
-export default {
-  mixins: [tabSwipe],
-  data() {
-    return {
-      pagePath: '/pages/device/device'
-    }
-  },
-  onShow() {
-    // 重置滑动位移
-    if (this.translateX !== undefined) {
-      this.translateX = 0;
-    }
-    // 同步tabBar选中状态
-    this.syncTabBar();
-  },
-  methods: {
-    handleSwipe(diffX) {
-      // 设备页是第一个，只能左滑（向右切换到导航页），右滑无操作
-      if (diffX < 0) { // 左滑（diffX为负）→ 导航页
-        uni.switchTab({
-          url: '/pages/navigation/navigation',
-          success: () => {
-            this.setTabBarActive(1)
-          },
-          fail: (err) => {
-            console.warn('切换tab失败:', err)
-          }
-        })
-      }
-      // 右滑（diffX>0）无操作，因为是第一个页面
-    }
-  }
-}
-</script>
-
-<style scoped>
-.page {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 32rpx;
-  /* 必须添加这个才能滑动 */
-  overflow: hidden;
-}
-</style>
