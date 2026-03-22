@@ -357,50 +357,85 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
 
       <!-- 室内建图 -->
       <div class="page" id="page-indoormap">
-        <div style="display:grid;grid-template-columns:1fr 220px;gap:16px;height:calc(100vh - 120px)">
+        <div style="display:flex;flex-direction:column;height:calc(100vh - 120px);gap:0">
 
-          <!-- 地图画布 -->
-          <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
-            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-              <span style="font-size:14px;font-weight:bold;color:var(--accent)">🗺️ 实时建图</span>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span class="status-dot" id="mapDot" style="background:var(--text-muted);animation:none"></span>
-                <span id="mapStatus" style="font-size:12px;color:var(--text-muted)">等待地图数据...</span>
+          <!-- 顶部工具栏 RViz风格 -->
+          <div style="background:#1e2130;border-bottom:1px solid #3a4060;padding:6px 12px;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:bold;color:#c8d0e0;margin-right:8px">实时建图 (Web RViz)</span>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizResetView()">🎯 复位</button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizToggleScan()"><span id="scanToggleLabel">📡 雷达 ✓</span></button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizTogglePath()"><span id="pathToggleLabel">🛤️ 轨迹 ✓</span></button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizToggleGrid()"><span id="gridToggleLabel">⊞ 网格 ✓</span></button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizClearPath()">🗑️ 清轨迹</button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="saveMap()">💾 保存</button>
+            <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px;color:#ffff00" onclick="window._rvizDebug=!window._rvizDebug;this.style.background=window._rvizDebug?'rgba(255,255,0,0.15)':''">🔍 调试</button>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+              <div style="display:flex;align-items:center;gap:5px">
+                <span class="status-dot" id="rvcDot" style="background:var(--text-muted);animation:none"></span>
+                <span id="rvcStatus" style="font-size:12px;color:var(--text-muted)">未连接</span>
               </div>
-            </div>
-            <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#0a0e1a;position:relative;overflow:hidden">
-              <canvas id="mapCanvas" style="max-width:100%;max-height:100%;image-rendering:pixelated"></canvas>
-              <div id="mapPlaceholder" style="text-align:center;color:var(--text-muted)">
-                <div style="font-size:48px;margin-bottom:12px">🗺️</div>
-                <div>启动建图后自动显示</div>
-                <div style="font-size:12px;margin-top:8px">roslaunch n10_slam n10_gmapping_web.launch</div>
+              <div style="display:flex;align-items:center;gap:5px">
+                <span class="status-dot" id="mapDot" style="background:var(--text-muted);animation:none"></span>
+                <span id="mapStatus" style="font-size:12px;color:var(--text-muted)">等待地图</span>
               </div>
             </div>
           </div>
 
-          <!-- 信息面板 -->
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="card">
-              <div class="card-title">📊 地图信息</div>
-              <div style="font-size:13px;line-height:2;color:var(--text-muted)">
-                <div>分辨率：<span id="map-resolution" style="color:var(--text)">--</span> m/格</div>
-                <div>宽度：<span id="map-width" style="color:var(--text)">--</span> 格</div>
-                <div>高度：<span id="map-height" style="color:var(--text)">--</span> 格</div>
-                <div>更新时间：<span id="map-time" style="color:var(--text)">--</span></div>
+          <!-- 主体：画布 + 右侧面板 -->
+          <div style="flex:1;display:grid;grid-template-columns:1fr 200px;overflow:hidden">
+
+            <!-- 地图画布区域 -->
+            <div style="position:relative;overflow:hidden;background:#111318;cursor:grab" id="rvizContainer">
+              <canvas id="rvizCanvas" style="position:absolute;top:0;left:0"></canvas>
+              <!-- 坐标显示 -->
+              <div id="rvizCoords" style="position:absolute;bottom:8px;left:10px;font-size:11px;color:rgba(200,208,224,0.6);font-family:monospace;pointer-events:none">x: -- y: --</div>
+              <!-- 比例尺 -->
+              <div id="rvizScale" style="position:absolute;bottom:8px;right:10px;font-size:11px;color:rgba(200,208,224,0.6);pointer-events:none"></div>
+              <div id="rvizPlaceholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);pointer-events:none">
+                <div style="font-size:40px;margin-bottom:10px;opacity:0.4">🗺️</div>
+                <div style="font-size:13px">连接 rosbridge 后自动显示</div>
+                <div style="font-size:11px;margin-top:6px;opacity:0.6">roslaunch n10_slam n10_gmapping_web.launch</div>
               </div>
             </div>
-            <div class="card">
-              <div class="card-title">🎨 图例</div>
-              <div style="font-size:12px;line-height:2.2;color:var(--text-muted)">
-                <div><span style="display:inline-block;width:14px;height:14px;background:#fff;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>空闲区域</div>
-                <div><span style="display:inline-block;width:14px;height:14px;background:#222;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>障碍物</div>
-                <div><span style="display:inline-block;width:14px;height:14px;background:#7f7f7f;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>未探索</div>
+
+            <!-- 右侧面板 -->
+            <div style="background:#1a1f2e;border-left:1px solid #3a4060;display:flex;flex-direction:column;overflow-y:auto">
+
+              <!-- 连接 -->
+              <div style="padding:12px;border-bottom:1px solid #2d3347">
+                <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 连接</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-bottom:5px">rosbridge WebSocket</div>
+                <input id="rvcUrl" class="route-input" style="font-size:11px;padding:6px 8px;margin-bottom:7px" placeholder="ws://x.x.x.x:9090">
+                <button class="btn btn-primary btn-block" id="rvcConnBtn" onclick="rvizConnect()" style="font-size:12px;padding:6px">▶ 连接</button>
+                <button class="btn btn-danger btn-block" id="rvcDiscBtn" style="display:none;margin-top:5px;font-size:12px;padding:6px" onclick="rvizDisconnect()">■ 断开</button>
               </div>
-            </div>
-            <div class="card">
-              <div class="card-title">⚙️ 操作</div>
-              <button class="btn btn-ghost btn-block" onclick="mapFitCanvas()">🔍 适应窗口</button>
-              <button class="btn btn-ghost btn-block" style="margin-top:6px" onclick="saveMap()">💾 保存地图</button>
+
+              <!-- 地图信息 -->
+              <div style="padding:12px;border-bottom:1px solid #2d3347">
+                <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 地图信息</div>
+                <div style="font-size:11px;line-height:2;color:var(--text-muted)">
+                  <div>分辨率 <span id="map-resolution" style="color:#c8d0e0;float:right">--</span></div>
+                  <div>尺寸 <span id="map-size" style="color:#c8d0e0;float:right">--</span></div>
+                  <div>位置 X <span id="odom-x" style="color:#4fc3f7;float:right">--</span></div>
+                  <div>位置 Y <span id="odom-y" style="color:#4fc3f7;float:right">--</span></div>
+                  <div>朝向 <span id="odom-yaw" style="color:#4fc3f7;float:right">--</span></div>
+                  <div>轨迹点 <span id="path-count" style="color:#c8d0e0;float:right">0</span></div>
+                  <div>雷达点 <span id="scan-count" style="color:#c8d0e0;float:right">--</span></div>
+                </div>
+              </div>
+
+              <!-- 图例 -->
+              <div style="padding:12px">
+                <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 图例</div>
+                <div style="font-size:11px;line-height:2.4;color:var(--text-muted)">
+                  <div><span style="display:inline-block;width:12px;height:12px;background:#f0f0f0;vertical-align:middle;margin-right:6px"></span>空闲区域</div>
+                  <div><span style="display:inline-block;width:12px;height:12px;background:#111318;border:1px solid #444;vertical-align:middle;margin-right:6px"></span>障碍物</div>
+                  <div><span style="display:inline-block;width:12px;height:12px;background:#636375;vertical-align:middle;margin-right:6px"></span>未探索</div>
+                  <div><span style="display:inline-block;width:12px;height:3px;background:#ff6b35;vertical-align:middle;margin-right:6px;margin-bottom:1px"></span>雷达点云</div>
+                  <div><span style="display:inline-block;width:12px;height:3px;background:#4fc3f7;vertical-align:middle;margin-right:6px;margin-bottom:1px"></span>移动轨迹</div>
+                  <div><span style="display:inline-block;width:12px;height:12px;background:#ff4081;border-radius:50%;vertical-align:middle;margin-right:6px"></span>小车位置</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1036,70 +1071,500 @@ document.addEventListener('keydown', e => {
 </div>
 
 <script>
-// ── 室内建图 SSE ──────────────────────────────────────────
-let mapSSE = null;
+// ── 室内建图 Web RViz ─────────────────────────────────────
+let rvizWS = null;
 
-function initMapSSE() {
-  if (mapSSE) return;
-  mapSSE = new EventSource(BASE + '/map/events');
+// 地图数据
+let rvizMap = null; // {width,height,res,origin_x,origin_y,data}
+let rvizMapDirty = false;
 
-  mapSSE.onmessage = (e) => {
-    try {
-      const d = JSON.parse(e.data);
-      renderMap(d);
-    } catch(_) {}
+// 视图变换
+let rvizView = { x: 0, y: 0, scale: 50 }; // scale: px/m
+let rvizDrag = null;
+
+// 小车位姿
+let robotPose = { x: 0, y: 0, yaw: 0 };
+let hasPose = false;
+
+// 轨迹
+let robotPath = [];
+const MAX_PATH = 3000;
+
+// 雷达（世界坐标）
+let scanPoints = [];
+
+// 显示开关
+let showScan = true, showPath = true, showGrid = true;
+
+// 地图离屏缓存
+let rvizMapCache = null;
+
+// 初始化 rosbridge URL
+function rvizInitUrl() {
+  const ip = JETSON_IP || window.location.hostname;
+  document.getElementById('rvcUrl').value = 'ws://' + ip + ':9090';
+}
+
+function rvizConnect() {
+  const url = document.getElementById('rvcUrl').value.trim();
+  if (!url) return;
+  if (rvizWS) { rvizWS.close(); rvizWS = null; }
+  rvizWS = new WebSocket(url);
+  rvizWS.onopen = () => {
+    setRvcStatus(true);
+    toast('rosbridge 已连接', 'success');
+    rvizSubscribeAll();
   };
+  rvizWS.onclose  = () => setRvcStatus(false);
+  rvizWS.onerror  = () => { setRvcStatus(false); toast('rosbridge 连接失败', 'error'); };
+  rvizWS.onmessage = e => { try { rvizHandleMsg(JSON.parse(e.data)); } catch(_) {} };
+}
 
-  mapSSE.onerror = () => {
-    document.getElementById('mapDot').style.background = 'var(--danger)';
-    document.getElementById('mapStatus').textContent = '连接断开，重试中...';
+function rvizDisconnect() {
+  if (rvizWS) { rvizWS.close(); rvizWS = null; }
+}
+
+function setRvcStatus(ok) {
+  document.getElementById('rvcDot').style.background  = ok ? 'var(--success)' : 'var(--danger)';
+  document.getElementById('rvcDot').style.animation   = ok ? 'pulse 2s infinite' : 'none';
+  document.getElementById('rvcStatus').textContent    = ok ? 'rosbridge 已连接' : 'rosbridge 已断开';
+  document.getElementById('rvcConnBtn').style.display = ok ? 'none'  : 'block';
+  document.getElementById('rvcDiscBtn').style.display = ok ? 'block' : 'none';
+}
+
+function rvizSend(obj) {
+  if (rvizWS && rvizWS.readyState === WebSocket.OPEN) rvizWS.send(JSON.stringify(obj));
+}
+
+function rvizSubscribeAll() {
+  rvizSend({ op:'subscribe', topic:'/map',       type:'nav_msgs/OccupancyGrid',  throttle_rate:1000 });
+  rvizSend({ op:'subscribe', topic:'/tf',        type:'tf2_msgs/TFMessage',      throttle_rate:50   });
+  rvizSend({ op:'subscribe', topic:'/tf_static', type:'tf2_msgs/TFMessage',      throttle_rate:0    });
+  rvizSend({ op:'subscribe', topic:'/scan',      type:'sensor_msgs/LaserScan',   throttle_rate:80   });
+}
+
+// TF 缓存：存 map→odom 和 odom→base_link（或直接 map→base_link）
+const tfCache = {}; // key: "parent->child", value: {tx,ty,yaw}
+
+function tfSet(parent, child, tx, ty, yaw) {
+  tfCache[parent + '->' + child] = { tx, ty, yaw };
+}
+
+function tfCompose(t1, t2) {
+  const c = Math.cos(t1.yaw), s = Math.sin(t1.yaw);
+  return {
+    tx:  t1.tx + c * t2.tx - s * t2.ty,
+    ty:  t1.ty + s * t2.tx + c * t2.ty,
+    yaw: t1.yaw + t2.yaw
   };
 }
 
-function renderMap(d) {
-  const canvas = document.getElementById('mapCanvas');
-  const placeholder = document.getElementById('mapPlaceholder');
-  if (!canvas || !d.image) return;
+function tfGet(parent, child) {
+  // 直接查
+  const direct = tfCache[parent + '->' + child];
+  if (direct) return direct;
+  // BFS 最多三跳
+  for (const k1 of Object.keys(tfCache)) {
+    const [p1, m1] = k1.split('->');
+    if (p1 !== parent) continue;
+    // 两跳
+    const k2 = m1 + '->' + child;
+    if (tfCache[k2]) return tfCompose(tfCache[k1], tfCache[k2]);
+    // 三跳
+    for (const k2b of Object.keys(tfCache)) {
+      const [p2, m2] = k2b.split('->');
+      if (p2 !== m1) continue;
+      const k3 = m2 + '->' + child;
+      if (tfCache[k3]) return tfCompose(tfCompose(tfCache[k1], tfCache[k2b]), tfCache[k3]);
+    }
+  }
+  return null;
+}
 
-  const img = new Image();
-  img.onload = () => {
-    canvas.width  = d.width;
-    canvas.height = d.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    placeholder.style.display = 'none';
-    canvas.style.display = 'block';
+function quatToYaw(q) {
+  return Math.atan2(2*(q.w*q.z + q.x*q.y), 1 - 2*(q.y*q.y + q.z*q.z));
+}
 
-    // 更新状态
+function rvizHandleMsg(msg) {
+  if (msg.op !== 'publish') return;
+  const d = msg.msg;
+
+  if (msg.topic === '/map') {
+    const firstMap = !rvizMap;
+    rvizMap = {
+      width:    d.info.width,
+      height:   d.info.height,
+      res:      d.info.resolution,
+      origin_x: d.info.origin.position.x,
+      origin_y: d.info.origin.position.y,
+      data:     d.data
+    };
+    rvizMapDirty = true;
     document.getElementById('mapDot').style.background = 'var(--success)';
     document.getElementById('mapDot').style.animation  = 'pulse 2s infinite';
     document.getElementById('mapStatus').textContent   = '建图中';
-    document.getElementById('map-resolution').textContent = d.resolution ? d.resolution.toFixed(3) : '--';
-    document.getElementById('map-width').textContent   = d.width  || '--';
-    document.getElementById('map-height').textContent  = d.height || '--';
-    document.getElementById('map-time').textContent    = new Date(d.timestamp).toLocaleTimeString();
-  };
-  img.src = 'data:image/png;base64,' + d.image;
+    document.getElementById('map-resolution').textContent = d.info.resolution.toFixed(3) + ' m';
+    document.getElementById('map-size').textContent    = d.info.width + '×' + d.info.height;
+    document.getElementById('rvizPlaceholder').style.display = 'none';
+    if (firstMap) rvizAutoFit();
+
+  } else if (msg.topic === '/tf' || msg.topic === '/tf_static') {
+    // 解析所有 TF 变换，缓存起来
+    for (const t of (d.transforms || [])) {
+      const parent = t.header.frame_id.replace(/^\//, '');
+      const child  = t.child_frame_id.replace(/^\//, '');
+      const tr = t.transform.translation;
+      const ro = t.transform.rotation;
+      tfSet(parent, child, tr.x, tr.y, quatToYaw(ro));
+    }
+    // 从 TF 链获取 map→base_link
+    const tf = tfGet('map', 'base_link');
+    if (tf) {
+      robotPose.x   = tf.tx;
+      robotPose.y   = tf.ty;
+      robotPose.yaw = tf.yaw;
+      hasPose = true;
+      const last = robotPath[robotPath.length - 1];
+      if (!last || Math.hypot(robotPose.x - last.x, robotPose.y - last.y) > 0.02) {
+        robotPath.push({ x: robotPose.x, y: robotPose.y });
+        if (robotPath.length > MAX_PATH) robotPath.shift();
+      }
+      document.getElementById('odom-x').textContent   = robotPose.x.toFixed(3) + ' m';
+      document.getElementById('odom-y').textContent   = robotPose.y.toFixed(3) + ' m';
+      document.getElementById('odom-yaw').textContent = (robotPose.yaw * 180 / Math.PI).toFixed(1) + '°';
+      document.getElementById('path-count').textContent = robotPath.length;
+    }
+
+  } else if (msg.topic === '/scan') {
+    if (!hasPose) return;
+    // 雷达装反180°，base_link→laser_frame yaw=π
+    // 用 map→base_link 位姿，scan角度加π补偿雷达安装方向
+    const laser_x  = robotPose.x;
+    const laser_y  = robotPose.y;
+    const laserYaw = robotPose.yaw + Math.PI; // 补偿雷达装反180°
+    const cos_l = Math.cos(laserYaw), sin_l = Math.sin(laserYaw);
+    const amin = d.angle_min, ainc = d.angle_increment;
+    const ranges = d.ranges, rmax = d.range_max || 3.5;
+    scanPoints = [];
+    for (let i = 0; i < ranges.length; i++) {
+      const r = ranges[i];
+      if (!isFinite(r) || r < 0.05 || r > rmax) continue;      const a = amin + i * ainc;
+      const lx = r * Math.cos(a), ly = r * Math.sin(a);
+      const wx = laser_x + lx * cos_l - ly * sin_l;
+      const wy = laser_y + lx * sin_l + ly * cos_l;
+      scanPoints.push({ x: wx, y: wy });
+    }
+    document.getElementById('scan-count').textContent = scanPoints.length;
+  }
 }
 
-function mapFitCanvas() {
-  const canvas = document.getElementById('mapCanvas');
-  if (!canvas) return;
-  const container = canvas.parentElement;
-  const scaleX = container.clientWidth  / canvas.width;
-  const scaleY = container.clientHeight / canvas.height;
-  const scale  = Math.min(scaleX, scaleY, 4);
-  canvas.style.width  = (canvas.width  * scale) + 'px';
-  canvas.style.height = (canvas.height * scale) + 'px';
+// ── 渲染 ──────────────────────────────────────────────────
+// 标准ROS坐标系：X右，Y上。屏幕：X右，Y下。所以只需翻转Y。
+function w2c(wx, wy) {
+  const c = document.getElementById('rvizCanvas');
+  return {
+    x: c.width  / 2 + (wx - rvizView.x) * rvizView.scale,
+    y: c.height / 2 - (wy - rvizView.y) * rvizView.scale
+  };
+}
+
+function rvizRender() {
+  requestAnimationFrame(rvizRender);
+  const canvas = document.getElementById('rvizCanvas');
+  const container = document.getElementById('rvizContainer');
+  if (!container) return;
+  const cw = container.clientWidth, ch = container.clientHeight;
+  if (canvas.width !== cw || canvas.height !== ch) {
+    canvas.width = cw; canvas.height = ch;
+    rvizMapCache = null;
+  }
+  const ctx = canvas.getContext('2d');
+
+  // RViz 风格背景
+  ctx.fillStyle = '#111318';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // ── 网格 ──
+  if (showGrid) {
+    const gridPx = rvizView.scale; // 1m一格
+    if (gridPx > 10) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.lineWidth = 1;
+      const ox = ((rvizView.x / 1) | 0) * 1;
+      const oy = ((rvizView.y / 1) | 0) * 1;
+      ctx.beginPath();
+      for (let wx = ox - cw/rvizView.scale; wx < ox + cw/rvizView.scale + 2; wx++) {
+        const px = w2c(wx, 0).x;
+        ctx.moveTo(px, 0); ctx.lineTo(px, ch);
+      }
+      for (let wy = oy - ch/rvizView.scale; wy < oy + ch/rvizView.scale + 2; wy++) {
+        const py = w2c(0, wy).y;
+        ctx.moveTo(0, py); ctx.lineTo(cw, py);
+      }
+      ctx.stroke();
+    }
+    // 原点十字
+    const o = w2c(0, 0);
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(o.x-10,o.y); ctx.lineTo(o.x+10,o.y);
+    ctx.moveTo(o.x,o.y-10); ctx.lineTo(o.x,o.y+10);
+    ctx.stroke();
+  }
+
+  // ── 地图 ──
+  if (rvizMap) {
+    if (rvizMapDirty || !rvizMapCache) {
+      const off = document.createElement('canvas');
+      off.width = rvizMap.width; off.height = rvizMap.height;
+      const octx = off.getContext('2d');
+      const img = octx.createImageData(rvizMap.width, rvizMap.height);
+      const data = rvizMap.data;
+      const W = rvizMap.width, H = rvizMap.height;
+      // OccupancyGrid row 0 = Y最小（地图底部），屏幕row 0 = 顶部，需要垂直翻转
+      for (let row = 0; row < H; row++) {
+        for (let col = 0; col < W; col++) {
+          const v = data[(H - 1 - row) * W + col];
+          let r, g, b;
+          if (v < 0)        { r=99;  g=99;  b=117; } // 未探索：中灰
+          else if (v === 0) { r=236; g=236; b=236; } // 空闲：近白
+          else              { r=20;  g=20;  b=20;  } // 障碍：近黑
+          const idx = (row * W + col) * 4;
+          img.data[idx]=r; img.data[idx+1]=g; img.data[idx+2]=b; img.data[idx+3]=255;
+        }
+      }
+      octx.putImageData(img, 0, 0);
+      rvizMapCache = off;
+      rvizMapDirty = false;
+    }
+    // ── 地图四角调试 ──
+    if (window._rvizDebug) {
+      const corners = [
+        {wx: rvizMap.origin_x,                          wy: rvizMap.origin_y,                           label:'BL'},
+        {wx: rvizMap.origin_x + rvizMap.width*rvizMap.res, wy: rvizMap.origin_y,                        label:'BR'},
+        {wx: rvizMap.origin_x,                          wy: rvizMap.origin_y + rvizMap.height*rvizMap.res, label:'TL'},
+        {wx: rvizMap.origin_x + rvizMap.width*rvizMap.res, wy: rvizMap.origin_y + rvizMap.height*rvizMap.res, label:'TR'},
+      ];
+      corners.forEach(c => {
+        const p = w2c(c.wx, c.wy);
+        ctx.fillStyle = '#00ffff';
+        ctx.fillRect(p.x-3, p.y-3, 6, 6);
+        ctx.fillText(c.label+'('+c.wx.toFixed(1)+','+c.wy.toFixed(1)+')', p.x+5, p.y+4);
+      });
+    }
+    const mapW_px = rvizMap.width  * rvizMap.res * rvizView.scale;
+    const mapH_px = rvizMap.height * rvizMap.res * rvizView.scale;
+    const tl = w2c(rvizMap.origin_x, rvizMap.origin_y + rvizMap.height * rvizMap.res);
+    ctx.imageSmoothingEnabled = rvizView.scale < 6;
+    ctx.drawImage(rvizMapCache, tl.x, tl.y, mapW_px, mapH_px);
+  }
+
+  // ── 轨迹 ──
+  if (showPath && robotPath.length > 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#4fc3f7';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.9;
+    const p0 = w2c(robotPath[0].x, robotPath[0].y);
+    ctx.moveTo(p0.x, p0.y);
+    for (let i = 1; i < robotPath.length; i++) {
+      const p = w2c(robotPath[i].x, robotPath[i].y);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // ── 雷达点云 ──
+  if (showScan && scanPoints.length > 0) {
+    const dot = Math.max(1.5, rvizView.scale * 0.015);
+    ctx.fillStyle = '#ff6b35';
+    ctx.globalAlpha = 0.9;
+    for (const pt of scanPoints) {
+      const p = w2c(pt.x, pt.y);
+      ctx.fillRect(p.x - dot/2, p.y - dot/2, dot, dot);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── 小车（RViz 风格箭头）──
+  if (hasPose || rvizMap) {
+    const rp = w2c(robotPose.x, robotPose.y);
+    const s = Math.max(10, Math.min(36, rvizView.scale * 0.35));
+    ctx.save();
+    ctx.translate(rp.x, rp.y);
+    ctx.rotate(-robotPose.yaw);
+    ctx.fillStyle = '#ff4081';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo( s,      0);
+    ctx.lineTo(-s*0.6,  s*0.5);
+    ctx.lineTo(-s*0.25, 0);
+    ctx.lineTo(-s*0.6, -s*0.5);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── 比例尺 ──
+  const scaleEl = document.getElementById('rvizScale');
+  if (scaleEl) {
+    const m = rvizView.scale >= 80 ? 0.5 : rvizView.scale >= 20 ? 1 : 2;
+    scaleEl.textContent = m + 'm = ' + (m * rvizView.scale).toFixed(0) + 'px  ×' + rvizView.scale.toFixed(0);
+  }
+
+  // ── 调试叠加 ──
+  if (window._rvizDebug && rvizMap && hasPose) {
+    ctx.font = '11px monospace';
+    ctx.fillStyle = '#ffff00';
+    const lines = [
+      'robot: (' + robotPose.x.toFixed(3) + ', ' + robotPose.y.toFixed(3) + ') yaw=' + (robotPose.yaw*180/Math.PI).toFixed(1) + '°',
+      'laser TF: ' + (()=>{const t=tfGet('map','laser_frame');return t?'('+t.tx.toFixed(3)+','+t.ty.toFixed(3)+') yaw='+( t.yaw*180/Math.PI).toFixed(1)+'°':'null'})(),
+      'map origin: (' + rvizMap.origin_x.toFixed(3) + ', ' + rvizMap.origin_y.toFixed(3) + ') res=' + rvizMap.res,
+      'scan[0]: ' + (scanPoints[0] ? '('+scanPoints[0].x.toFixed(3)+','+scanPoints[0].y.toFixed(3)+')' : 'none'),
+      'scan[0] map px: ' + (scanPoints[0] ? ((scanPoints[0].x-rvizMap.origin_x)/rvizMap.res).toFixed(1)+','+ ((scanPoints[0].y-rvizMap.origin_y)/rvizMap.res).toFixed(1) : 'none'),
+    ];
+    lines.forEach((l,i) => {
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(8, 8 + i*16, ctx.measureText(l).width + 6, 14);
+      ctx.fillStyle = '#ffff00';
+      ctx.fillText(l, 11, 20 + i*16);
+    });
+    // 在小车位置画十字
+    const rp = w2c(robotPose.x, robotPose.y);
+    ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(rp.x-15,rp.y); ctx.lineTo(rp.x+15,rp.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(rp.x,rp.y-15); ctx.lineTo(rp.x,rp.y+15); ctx.stroke();
+    // 在laser_frame位置画圆
+    const tfL = tfGet('map','laser_frame');
+    if (tfL) {
+      const lp = w2c(tfL.tx, tfL.ty);
+      ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(lp.x, lp.y, 8, 0, Math.PI*2); ctx.stroke();
+    }
+  }
+}
+
+// ── 视图控制 ──────────────────────────────────────────────
+function rvizAutoFit() {
+  if (!rvizMap) return;
+  const canvas = document.getElementById('rvizCanvas');
+  if (!canvas.width) return;
+  const mw = rvizMap.width  * rvizMap.res;
+  const mh = rvizMap.height * rvizMap.res;
+  rvizView.scale = Math.min(canvas.width / mw, canvas.height / mh) * 0.88;
+  rvizView.x = rvizMap.origin_x + mw / 2;
+  rvizView.y = rvizMap.origin_y + mh / 2;
+}
+
+function rvizResetView() {
+  if (rvizMap) { rvizAutoFit(); return; }
+  rvizView = { x: 0, y: 0, scale: 50 };
+}
+
+function rvizToggleScan() {
+  showScan = !showScan;
+  document.getElementById('scanToggleLabel').textContent = '📡 雷达 ' + (showScan ? '✓' : '✗');
+}
+function rvizTogglePath() {
+  showPath = !showPath;
+  document.getElementById('pathToggleLabel').textContent = '🛤️ 轨迹 ' + (showPath ? '✓' : '✗');
+}
+function rvizToggleGrid() {
+  showGrid = !showGrid;
+  document.getElementById('gridToggleLabel').textContent = '⊞ 网格 ' + (showGrid ? '✓' : '✗');
+}
+function rvizClearPath() {
+  robotPath = [];
+  document.getElementById('path-count').textContent = '0';
 }
 
 function saveMap() {
-  const canvas = document.getElementById('mapCanvas');
-  if (!canvas || canvas.style.display === 'none') { toast('暂无地图数据', 'warning'); return; }
+  if (!rvizMap) { toast('暂无地图数据', 'warning'); return; }
+  const canvas = document.getElementById('rvizCanvas');
   const a = document.createElement('a');
   a.download = 'map_' + Date.now() + '.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
+}
+
+// ── 鼠标/触摸交互 ─────────────────────────────────────────
+(function() {
+  const el = document.getElementById('rvizContainer');
+  if (!el) return;
+
+  // 滚轮缩放（以鼠标为中心）
+  el.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = el.getBoundingClientRect();
+    const canvas = document.getElementById('rvizCanvas');
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const wx = rvizView.x + (mx - canvas.width/2)  / rvizView.scale;
+    const wy = rvizView.y - (my - canvas.height/2) / rvizView.scale;
+    const f = e.deltaY < 0 ? 1.12 : 0.89;
+    rvizView.scale = Math.max(4, Math.min(800, rvizView.scale * f));
+    rvizView.x = wx - (mx - canvas.width/2)  / rvizView.scale;
+    rvizView.y = wy + (my - canvas.height/2) / rvizView.scale;
+  }, { passive: false });
+
+  el.addEventListener('mousedown', e => {
+    rvizDrag = { sx: e.clientX, sy: e.clientY, vx: rvizView.x, vy: rvizView.y };
+    el.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', e => {
+    if (!rvizDrag) return;
+    rvizView.x = rvizDrag.vx - (e.clientX - rvizDrag.sx) / rvizView.scale;
+    rvizView.y = rvizDrag.vy + (e.clientY - rvizDrag.sy) / rvizView.scale;
+  });
+  window.addEventListener('mouseup', () => {
+    rvizDrag = null;
+    const c = document.getElementById('rvizContainer');
+    if (c) c.style.cursor = 'grab';
+  });
+
+  // 鼠标坐标显示
+  el.addEventListener('mousemove', e => {
+    const rect = el.getBoundingClientRect();
+    const canvas = document.getElementById('rvizCanvas');
+    const wx = rvizView.x + (e.clientX - rect.left  - canvas.width/2)  / rvizView.scale;
+    const wy = rvizView.y - (e.clientY - rect.top   - canvas.height/2) / rvizView.scale;
+    const coordEl = document.getElementById('rvizCoords');
+    if (coordEl) coordEl.textContent = 'x: ' + wx.toFixed(2) + '  y: ' + wy.toFixed(2);
+  });
+
+  // 触摸
+  let lastDist = 0;
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length === 1)
+      rvizDrag = { sx: e.touches[0].clientX, sy: e.touches[0].clientY, vx: rvizView.x, vy: rvizView.y };
+    else if (e.touches.length === 2)
+      lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && rvizDrag) {
+      rvizView.x = rvizDrag.vx - (e.touches[0].clientX - rvizDrag.sx) / rvizView.scale;
+      rvizView.y = rvizDrag.vy + (e.touches[0].clientY - rvizDrag.sy) / rvizView.scale;
+    } else if (e.touches.length === 2) {
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      if (lastDist > 0) rvizView.scale = Math.max(4, Math.min(800, rvizView.scale * d / lastDist));
+      lastDist = d;
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', () => { rvizDrag = null; lastDist = 0; });
+})();
+
+// 切换到室内建图页面时初始化
+function initMapSSE() {
+  rvizInitUrl();
+  if (!initMapSSE._started) {
+    initMapSSE._started = true;
+    requestAnimationFrame(rvizRender);
+  }
 }
 fetchData();
 setInterval(fetchData, 3000);

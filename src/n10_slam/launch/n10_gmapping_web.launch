@@ -51,11 +51,9 @@
         <param name="ymax" value="5.0"/>
     </node>
 
-    <!-- 地图推送节点（不启动rviz，改用web前端显示） -->
-    <!-- backend_url 改为运行 Spring Boot 的机器 IP -->
-    <arg name="backend_url" default="http://192.168.1.103:8080/api/map/push"/>
-    <node pkg="http_pkg" type="map_node.py" name="map_node" output="screen">
-        <param name="backend_url" value="$(arg backend_url)"/>
-    </node>
+    <!-- rosbridge：前端 WebSocket 直连 ROS topics -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+        <arg name="port" value="9090"/>
+    </include>
 
 </launch>
