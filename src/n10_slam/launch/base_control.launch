@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <!-- STM32串口通信节点 -->
-    <node pkg="packet_pkg" type="serial_node.py" name="jetbot_serial" output="screen">
-        <param name="port" value="/dev/ttyACM0"/>
-    </node>
-</launch>

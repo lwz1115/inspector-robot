@@ -355,19 +355,83 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
         </div>
       </div>
 
+      <!-- 室内建图 -->
+      <div class="page" id="page-indoormap">
+        <div style="display:grid;grid-template-columns:1fr 220px;gap:16px;height:calc(100vh - 120px)">
+
+          <!-- 地图画布 -->
+          <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:14px;font-weight:bold;color:var(--accent)">🗺️ 实时建图</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="status-dot" id="mapDot" style="background:var(--text-muted);animation:none"></span>
+                <span id="mapStatus" style="font-size:12px;color:var(--text-muted)">等待地图数据...</span>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#0a0e1a;position:relative;overflow:hidden">
+              <canvas id="mapCanvas" style="max-width:100%;max-height:100%;image-rendering:pixelated"></canvas>
+              <div id="mapPlaceholder" style="text-align:center;color:var(--text-muted)">
+                <div style="font-size:48px;margin-bottom:12px">🗺️</div>
+                <div>启动建图后自动显示</div>
+                <div style="font-size:12px;margin-top:8px">roslaunch n10_slam n10_gmapping_web.launch</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 信息面板 -->
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="card">
+              <div class="card-title">📊 地图信息</div>
+              <div style="font-size:13px;line-height:2;color:var(--text-muted)">
+                <div>分辨率：<span id="map-resolution" style="color:var(--text)">--</span> m/格</div>
+                <div>宽度：<span id="map-width" style="color:var(--text)">--</span> 格</div>
+                <div>高度：<span id="map-height" style="color:var(--text)">--</span> 格</div>
+                <div>更新时间：<span id="map-time" style="color:var(--text)">--</span></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">🎨 图例</div>
+              <div style="font-size:12px;line-height:2.2;color:var(--text-muted)">
+                <div><span style="display:inline-block;width:14px;height:14px;background:#fff;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>空闲区域</div>
+                <div><span style="display:inline-block;width:14px;height:14px;background:#222;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>障碍物</div>
+                <div><span style="display:inline-block;width:14px;height:14px;background:#7f7f7f;border:1px solid #555;vertical-align:middle;margin-right:6px"></span>未探索</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">⚙️ 操作</div>
+              <button class="btn btn-ghost btn-block" onclick="mapFitCanvas()">🔍 适应窗口</button>
+              <button class="btn btn-ghost btn-block" style="margin-top:6px" onclick="saveMap()">💾 保存地图</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
 
 <script>
 // ── 状态 ──────────────────────────────────────────────────
-const BASE = 'http://localhost:8080/api';
+const BASE = window.location.protocol + '//' + window.location.hostname + ':8080/api';
+// Jetson IP：从后端配置获取，也可手动覆盖 localStorage.setItem('jetson_ip','x.x.x.x')
+let JETSON_IP = localStorage.getItem('jetson_ip') || window.location.hostname;
+let CAM_STREAM = window.location.protocol + '//' + JETSON_IP + ':8081/stream?topic=/image';
+
+// 启动时从后端拉取 Jetson IP 列表，自动匹配当前网络
+fetch(BASE + '/config/jetson-ip').then(r => r.json()).then(d => {
+  if (d.ips && d.ips.length > 0) {
+    // 优先用与当前访问 hostname 相同的 IP，否则取第一个
+    const matched = d.ips.find(ip => ip === window.location.hostname);
+    JETSON_IP = matched || d.ips[0];
+    CAM_STREAM = window.location.protocol + '//' + JETSON_IP + ':8081/stream?topic=/image';
+  }
+}).catch(() => {});
 let robotData = {};
 let mapObj = null, mapReady = false, mapDark = false;
 let routeMarkers = [], routePolylines = [], currentDest = null;
 
 // ── 导航 ──────────────────────────────────────────────────
-const pageTitles = {dashboard:'数据监控',video:'视频监控',location:'位置检测',control:'设备控制'};
+const pageTitles = {dashboard:'数据监控',video:'视频监控',location:'位置检测',control:'设备控制',indoormap:'室内建图'};
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -376,6 +440,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.getElementById('page-' + item.dataset.page).classList.add('active');
     document.getElementById('page-title').textContent = pageTitles[item.dataset.page];
     if (item.dataset.page === 'location' && !mapReady) initMap();
+    if (item.dataset.page === 'indoormap') initMapSSE();
   });
 });
 
@@ -583,7 +648,7 @@ function initMap() {
   mapObj = new AMap.Map('map', {
     zoom: 16,
     center: [118.93069167, 32.1230155],
-    mapStyle: 'amap://styles/dark'
+    mapStyle: 'amap://styles/normal'
   });
   mapObj.on('complete', () => {
     mapReady = true;
@@ -717,7 +782,6 @@ function setQuality(q, w, h) {
 }
 
 function connectCamera() {
-  const q = document.getElementById('qualitySlider').value;
   const img = document.getElementById('camImg');
   const dot = document.getElementById('camDot');
   document.getElementById('camPlaceholder').style.display = 'none';
@@ -725,6 +789,7 @@ function connectCamera() {
   dot.style.background = 'var(--warning)';
   dot.style.animation = 'pulse 2s infinite';
   document.getElementById('camStatus').textContent = '连接中...';
+
   img.onerror = () => {
     img.style.display = 'none';
     document.getElementById('camError').style.display = 'block';
@@ -735,14 +800,25 @@ function connectCamera() {
     document.getElementById('camConnBtn').style.display = 'block';
     document.getElementById('camDiscBtn').style.display = 'none';
   };
-  img.onload = () => {
-    dot.style.background = 'var(--success)';
-    document.getElementById('camStatus').textContent = '直播中';
-  };
-  img.src = 'http://10.234.236.100:8081/stream?topic=/image&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
+
+  // MJPEG流不触发onload，用定时检测宽度判断是否有画面
+  img.onload = null;
+  img.src = CAM_STREAM + '&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
   img.style.display = 'block';
   document.getElementById('camConnBtn').style.display = 'none';
   document.getElementById('camDiscBtn').style.display = 'block';
+
+  // 3秒后检测是否有画面
+  setTimeout(() => {
+    if (img.naturalWidth > 0) {
+      dot.style.background = 'var(--success)';
+      dot.style.animation = 'none';
+      document.getElementById('camStatus').textContent = '直播中';
+    } else if (document.getElementById('camStatus').textContent === '连接中...') {
+      // 还没报错也没画面，继续等
+      dot.style.background = 'var(--warning)';
+    }
+  }, 3000);
 }
 
 function disconnectCamera() {
@@ -960,7 +1036,71 @@ document.addEventListener('keydown', e => {
 </div>
 
 <script>
-// ── 启动 ──────────────────────────────────────────────────
+// ── 室内建图 SSE ──────────────────────────────────────────
+let mapSSE = null;
+
+function initMapSSE() {
+  if (mapSSE) return;
+  mapSSE = new EventSource(BASE + '/map/events');
+
+  mapSSE.onmessage = (e) => {
+    try {
+      const d = JSON.parse(e.data);
+      renderMap(d);
+    } catch(_) {}
+  };
+
+  mapSSE.onerror = () => {
+    document.getElementById('mapDot').style.background = 'var(--danger)';
+    document.getElementById('mapStatus').textContent = '连接断开，重试中...';
+  };
+}
+
+function renderMap(d) {
+  const canvas = document.getElementById('mapCanvas');
+  const placeholder = document.getElementById('mapPlaceholder');
+  if (!canvas || !d.image) return;
+
+  const img = new Image();
+  img.onload = () => {
+    canvas.width  = d.width;
+    canvas.height = d.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    placeholder.style.display = 'none';
+    canvas.style.display = 'block';
+
+    // 更新状态
+    document.getElementById('mapDot').style.background = 'var(--success)';
+    document.getElementById('mapDot').style.animation  = 'pulse 2s infinite';
+    document.getElementById('mapStatus').textContent   = '建图中';
+    document.getElementById('map-resolution').textContent = d.resolution ? d.resolution.toFixed(3) : '--';
+    document.getElementById('map-width').textContent   = d.width  || '--';
+    document.getElementById('map-height').textContent  = d.height || '--';
+    document.getElementById('map-time').textContent    = new Date(d.timestamp).toLocaleTimeString();
+  };
+  img.src = 'data:image/png;base64,' + d.image;
+}
+
+function mapFitCanvas() {
+  const canvas = document.getElementById('mapCanvas');
+  if (!canvas) return;
+  const container = canvas.parentElement;
+  const scaleX = container.clientWidth  / canvas.width;
+  const scaleY = container.clientHeight / canvas.height;
+  const scale  = Math.min(scaleX, scaleY, 4);
+  canvas.style.width  = (canvas.width  * scale) + 'px';
+  canvas.style.height = (canvas.height * scale) + 'px';
+}
+
+function saveMap() {
+  const canvas = document.getElementById('mapCanvas');
+  if (!canvas || canvas.style.display === 'none') { toast('暂无地图数据', 'warning'); return; }
+  const a = document.createElement('a');
+  a.download = 'map_' + Date.now() + '.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
 fetchData();
 setInterval(fetchData, 3000);
 </script>

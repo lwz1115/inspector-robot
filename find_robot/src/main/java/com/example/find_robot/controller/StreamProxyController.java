@@ -3,6 +3,7 @@ package com.example.find_robot.controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -17,10 +18,12 @@ import java.net.URL;
 @CrossOrigin(origins = "*")
 public class StreamProxyController {
 
-    private static final String CAM_URL = "http://10.234.236.100:8081/stream?topic=/image";
+    @Value("${camera.stream.url:http://localhost:8081}")
+    private String camBaseUrl;
 
     @GetMapping("/camera")
     public ResponseEntity<StreamingResponseBody> proxyStream() {
+        String CAM_URL = camBaseUrl + "/stream?topic=/image";
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(CAM_URL).openConnection();
             conn.setConnectTimeout(5000);

@@ -248,7 +248,7 @@
 
             // 使用POST请求
             $.ajax({
-                url: 'http://localhost:8080/api/auth/register',
+                url: window.location.protocol + '//' + window.location.hostname + ':8080/api/auth/register',
                 type: 'POST',
                 data: {
                     username: field.username,

@@ -1,6 +1,6 @@
 // ── API 模块 ──────────────────────────────────────────────
 const API = {
-  BASE: 'http://localhost:8080/api',
+  BASE: window.location.protocol + '//' + window.location.hostname + ':8080/api',
 
   async get(path) {
     const res = await fetch(this.BASE + path, {
