@@ -2,7 +2,8 @@
     <view class="container">
         <!-- 顶部轮播图 -->
         <view class="swiper-container">
-            <swiper class="swiper" indicator-dots="true" autoplay="true" interval="3000" duration="500">
+            <swiper class="swiper" indicator-dots="true" indicator-active-color="#ffffff"
+                autoplay="true" interval="3000" duration="500" circular="true">
                 <swiper-item>
                     <image class="swiper-image" src="/static/1.jpg" mode="aspectFill"></image>
                 </swiper-item>
@@ -15,526 +16,218 @@
             </swiper>
         </view>
 
-        <!-- 系统标题 -->
-        <view class="header">
-            <text class="title">巡检机器人管理系统</text>
+        <!-- 标题区 -->
+        <view class="page-title-box">
+            <text class="page-title" :style="textStyle">巡检机器人管理系统</text>
         </view>
 
-        <!-- 登录表单 -->
-        <view class="login-form">
+        <view class="login-form" :style="cardStyle">
             <view class="form-title">
-                <text class="title-text">用户登录</text>
+                <text class="title-text" :style="textStyle">用户登录</text>
+                <view class="title-line" :style="accentLineStyle"></view>
             </view>
-            
-            <!-- 用户名输入 -->
             <view class="input-group">
-                <view class="input-label">
-                    <text>用户名</text>
-                </view>
-                <view class="input-container">
-                    <input 
-                        class="input" 
-                        type="text" 
-                        placeholder="请输入用户名"
-                        v-model="username"
-                        placeholder-class="placeholder"
-                    />
+                <view class="input-icon-wrap" :style="inputWrapStyle">
+                    <text class="input-icon">👤</text>
+                    <input class="input" :style="inputTextStyle" type="text"
+                        placeholder="请输入用户名" v-model="username" placeholder-class="placeholder"/>
                 </view>
             </view>
-
-            <!-- 密码输入 -->
             <view class="input-group">
-                <view class="input-label">
-                    <text>密码</text>
-                </view>
-                <view class="input-container">
-                    <input 
-                        class="input" 
-                        type="password" 
-                        placeholder="请输入密码"
-                        v-model="password"
-                        placeholder-class="placeholder"
-                    />
+                <view class="input-icon-wrap" :style="inputWrapStyle">
+                    <text class="input-icon">🔒</text>
+                    <input class="input" :style="inputTextStyle" type="password"
+                        placeholder="请输入密码" v-model="password" placeholder-class="placeholder"/>
                 </view>
             </view>
-
-            <!-- 验证码输入 -->
-            <view class="input-group">
-                <view class="input-label">
-                    <text>验证码</text>
-                </view>
-                <view class="captcha-container">
-                    <view class="input-container captcha-input">
-                        <input 
-                            class="input" 
-                            type="text" 
-                            placeholder="请输入验证码"
-                            v-model="captcha"
-                            placeholder-class="placeholder"
-                            maxlength="4"
-                        />
-                    </view>
-                    <view class="captcha-img" @click="refreshCaptcha">
-                        <image 
-                            v-if="captchaUrl" 
-                            :src="captchaUrl" 
-                            mode="aspectFit"
-                            class="captcha-image"
-                            @error="onCaptchaError"
-                        ></image>
-                        <text v-else class="captcha-loading">加载中...</text>
-                    </view>
-                </view>
-            </view>
-
-            <!-- 记住密码和忘记密码 -->
             <view class="form-options">
                 <view class="remember-me" @click="toggleRemember">
-                    <view class="checkbox" :class="{checked: rememberPassword}">
+                    <view class="checkbox" :style="rememberPassword ? checkedStyle : ''">
                         <text class="checkmark" v-if="rememberPassword">✓</text>
                     </view>
-                    <text class="option-text">记住密码</text>
+                    <text class="option-text" :style="subTextStyle">记住密码</text>
                 </view>
-                <view class="forgot-password" @click="forgotPassword">
-                    <text class="option-text link">忘记密码？</text>
+                <view @click="forgotPassword">
+                    <text class="option-text" :style="linkStyle">忘记密码？</text>
                 </view>
             </view>
-
-            <!-- 登录按钮 -->
-            <view class="login-button" @click="handleLogin">
-                <text class="login-button-text">登录</text>
+            <view class="login-button" :class="{disabled: loading}" :style="btnStyle" @click="handleLogin">
+                <text class="login-button-text">{{ loading ? '登录中...' : '立即登录' }}</text>
             </view>
-
-            <!-- 注册链接 -->
             <view class="register-link">
-                <text class="register-text">还没有账号？</text>
-                <text class="link" @click="goToRegister">立即注册</text>
+                <text class="register-text" :style="subTextStyle">还没有账号？</text>
+                <text :style="linkStyle" @click="goToRegister">立即注册</text>
             </view>
         </view>
 
-        <!-- 底部版权信息 -->
         <view class="footer">
-            <text class="copyright">©2025 李文卓物联2431 版权所有</text>
+            <text class="copyright">© 2025 李文卓 · 物联2431</text>
             <view class="about-link" @click="goToAbout">
-                <text class="link">关于我们</text>
+                <text :style="linkStyle">关于我们</text>
             </view>
         </view>
     </view>
 </template>
 
 <script>
+import { BASE } from '@/config/server.js'
+import { getThemeVars } from '@/config/theme.js'
+
 export default {
     data() {
         return {
             username: '',
             password: '',
-            captcha: '',
             rememberPassword: false,
-            captchaUrl: '',
-            baseUrl: 'http://10.223.113.245:8080'
+            loading: false,
+            theme: getThemeVars()
         }
     },
+    computed: {
+        cardStyle()       { return 'background:' + this.theme.card + ';' },
+        textStyle()       { return 'color:' + this.theme.text + ';' },
+        subTextStyle()    { return 'color:' + this.theme.textSub + ';' },
+        linkStyle()       { return 'color:' + this.theme.primary + ';font-size:26rpx;' },
+        inputWrapStyle()  { return 'border:2rpx solid ' + this.theme.border + ';background:' + this.theme.inputBg + ';' },
+        inputTextStyle()  { return 'color:' + this.theme.text + ';' },
+        accentLineStyle() { return 'background:linear-gradient(90deg,' + this.theme.primary + ',' + this.theme.primary2 + ');' },
+        btnStyle()        { return 'background:linear-gradient(135deg,' + this.theme.primary + ',' + this.theme.primary2 + ');' },
+        checkedStyle()    { return 'background:' + this.theme.primary + ';border-color:' + this.theme.primary + ';' }
+    },
+    onShow() { this.theme = getThemeVars() },
     onLoad() {
-        // 初始化验证码
-        this.refreshCaptcha();
-        
-        // 检查是否有保存的用户名
-        const savedUsername = uni.getStorageSync('currentUsername');
-        if (savedUsername) {
-            this.username = savedUsername;
-        }
-        
-        // 检查自动登录
-        this.checkAutoLogin();
+        try {
+            const saved = uni.getStorageSync('rememberedUser')
+            if (saved) { this.username = saved; this.rememberPassword = true }
+        } catch (e) {}
+        this.checkAutoLogin()
     },
     methods: {
-        // 简化的自动登录逻辑
         checkAutoLogin() {
             try {
-                const username = uni.getStorageSync('currentUsername');
-                const userId = uni.getStorageSync('userId');
-                const loginTime = uni.getStorageSync('loginTime');
-                
-                console.log('检查自动登录信息:', { username, userId, loginTime });
-                
-                // 只需要用户名和用户ID
-                if (username && userId) {
-                    const now = new Date().getTime();
-                    const oneDay = 1 * 24 * 60 * 60 * 1000;
-                    
-                    // 检查登录时间（可选）
-                    if (loginTime && now - loginTime < oneDay) {
-                        console.log('自动跳转到主界面');
-                        
-                        uni.showLoading({
-                            title: '自动登录中...',
-                            mask: true
-                        });
-                        
-                        setTimeout(() => {
-                            uni.hideLoading();
-                            uni.switchTab({
-                                url: '/pages/device/device'
-                            });
-                        }, 1000);
-                    }
+                const userId = uni.getStorageSync('userId')
+                const loginTime = uni.getStorageSync('loginTime')
+                if (userId && loginTime && (Date.now() - loginTime) < 24 * 3600 * 1000) {
+                    uni.switchTab({ url: '/pages/device/device' })
                 }
-            } catch (error) {
-                console.error('检查自动登录失败:', error);
-            }
+            } catch (e) {}
         },
-        
-        // 切换记住密码状态
-        toggleRemember() {
-            this.rememberPassword = !this.rememberPassword;
-        },
-        
-        // 刷新验证码
-        refreshCaptcha() {
-            try {
-                const timestamp = new Date().getTime();
-                this.captchaUrl = `${this.baseUrl}/api/auth/captcha?t=${timestamp}`;
-            } catch (error) {
-                console.error('刷新验证码失败:', error);
-                uni.showToast({
-                    title: '验证码加载失败',
-                    icon: 'none'
-                });
-            }
-        },
-        
-        // 验证码加载错误处理
-        onCaptchaError() {
-            console.error('验证码图片加载失败');
-            this.captchaUrl = '';
-        },
-        
-        // 处理登录
-        async handleLogin() {
-            // 表单验证
-            if (!this.username.trim()) {
-                uni.showToast({ title: '请输入用户名', icon: 'none' });
-                return;
-            }
-            
-            if (!this.password) {
-                uni.showToast({ title: '请输入密码', icon: 'none' });
-                return;
-            }
-            
-            if (!this.captcha.trim()) {
-                uni.showToast({ title: '请输入验证码', icon: 'none' });
-                return;
-            }
-            
-            uni.showLoading({ title: '登录中...', mask: true });
-            
-            try {
-                const response = await uni.request({
-                    url: `${this.baseUrl}/api/auth/login`,
-                    method: 'POST',
-                    data: `username=${encodeURIComponent(this.username.trim())}&password=${encodeURIComponent(this.password)}&captcha=${encodeURIComponent(this.captcha.trim())}`,
-                    header: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    timeout: 10000
-                });
-                
-                uni.hideLoading();
-                
-                if (response.statusCode === 200) {
-                    const result = response.data;
-                    
-                    if (result.success) {
-                        console.log('登录成功:', result);
-                        
-                        // 简化存储：只存用户名和用户ID
-                        uni.setStorageSync('currentUsername', this.username);
-                        const userId = result.userId || (result.data && result.data.userId) || '';
-                        uni.setStorageSync('userId', userId.toString());
-                        uni.setStorageSync('loginTime', new Date().getTime());
-                        
-                        uni.showToast({
-                            title: '登录成功！',
-                            icon: 'success',
-                            duration: 1500
-                        });
-                        
-                        setTimeout(() => {
-                            uni.switchTab({ url: '/pages/device/device' });
-                        }, 1500);
-                        
-                    } else {
-                        uni.showToast({
-                            title: result.message || '登录失败',
-                            icon: 'none'
-                        });
-                        
-                        this.refreshCaptcha();
-                        this.captcha = '';
-                    }
-                } else {
-                    uni.showToast({
-                        title: response.data?.message || `服务器错误: ${response.statusCode}`,
-                        icon: 'none',
-                        duration: 3000
-                    });
-                }
-                
-            } catch (error) {
-                uni.hideLoading();
-                console.error('登录请求失败:', error);
-                
-                let errorMessage = '登录失败，请重试';
-                if (error.errMsg?.includes('timeout')) errorMessage = '请求超时';
-                if (error.errMsg?.includes('fail')) errorMessage = '无法连接到服务器';
-                
-                uni.showToast({ title: errorMessage, icon: 'none', duration: 3000 });
-                this.refreshCaptcha();
-                this.captcha = '';
-            }
-        },
-        
-        // 忘记密码
+        toggleRemember() { this.rememberPassword = !this.rememberPassword },
         forgotPassword() {
-            uni.showModal({
-                title: '忘记密码',
-                content: '请联系系统管理员重置密码',
-                showCancel: false,
-                confirmText: '知道了'
-            });
+            uni.showModal({ title: '忘记密码', content: '请通过 Web 端使用邮箱验证码找回密码', showCancel: false, confirmText: '知道了' })
         },
-        
-        // 跳转到关于我们页面
-        goToAbout() {
-            uni.navigateTo({ url: '/pages/about/about' });
+        async handleLogin() {
+            const username = (this.username || '').trim()
+            const password = this.password || ''
+            if (!username) { uni.showToast({ title: '请输入用户名', icon: 'none' }); return }
+            if (!password)  { uni.showToast({ title: '请输入密码',   icon: 'none' }); return }
+            if (this.loading) return
+            this.loading = true
+            uni.showLoading({ title: '登录中...', mask: true })
+            try {
+                const res = await uni.request({
+                    url: BASE + '/auth/login', method: 'POST',
+                    data: 'username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password),
+                    header: { 'Content-Type': 'application/x-www-form-urlencoded' }, timeout: 10000
+                })
+                uni.hideLoading()
+                const result = res.data
+                if (res.statusCode === 200 && result && result.success) {
+                    if (this.rememberPassword) uni.setStorageSync('rememberedUser', username)
+                    else { try { uni.removeStorageSync('rememberedUser') } catch (e) {} }
+                    uni.setStorageSync('userId', String(result.userId || ''))
+                    uni.setStorageSync('currentUsername', result.username || username)
+                    uni.setStorageSync('loginTime', Date.now())
+                    uni.showToast({ title: '登录成功', icon: 'success', duration: 1500 })
+                    setTimeout(() => { uni.switchTab({ url: '/pages/device/device' }) }, 1500)
+                } else {
+                    uni.showToast({ title: (result && result.message) || '用户名或密码错误', icon: 'none', duration: 2500 })
+                }
+            } catch (e) {
+                uni.hideLoading()
+                const msg = String(e && e.errMsg || '')
+                if (msg.includes('timeout')) uni.showToast({ title: '请求超时，请检查网络', icon: 'none', duration: 2500 })
+                else uni.showToast({ title: '无法连接到服务器', icon: 'none', duration: 2500 })
+            } finally { this.loading = false }
         },
-        
-        // 跳转到注册页面
-        goToRegister() {
-            uni.navigateTo({ url: '/pages/register/register' });
-        }
+        goToAbout()    { uni.navigateTo({ url: '/pages/about/about' }) },
+        goToRegister() { uni.navigateTo({ url: '/pages/register/register' }) }
     }
 }
 </script>
 
 <style scoped>
-.container {
-    flex: 1;
-    background: #f5f5f5;
-}
+.container { flex: 1; background: #f0f2f5; }
 
-/* 轮播图容器 */
+/* 轮播图 */
 .swiper-container {
-    height: 300rpx;
-    width: 100%;
-}
-
-.swiper {
-    height: 100%;
-    width: 100%;
-}
-
-.swiper-image {
-    height: 100%;
-    width: 100%;
-}
-
-/* 系统标题 */
-.header {
-    padding: 40rpx 0 20rpx 0;
-    align-items: center;
-    background: #f5f5f5;
-}
-
-.title {
-    font-size: 36rpx;
-    font-weight: bold;
-    color: #333333;
-    text-align: center;
-}
-
-/* 登录表单 */
-.login-form {
-    margin: 0 40rpx;
-    background: #ffffff;
-    border-radius: 20rpx;
-    padding: 50rpx 40rpx;
-    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
-    margin-top: 20rpx;
-}
-
-.form-title {
-    margin-bottom: 50rpx;
-    align-items: center;
-}
-
-.title-text {
-    font-size: 32rpx;
-    font-weight: bold;
-    color: #333333;
-}
-
-/* 输入框组 */
-.input-group {
-    margin-bottom: 40rpx;
-}
-
-.input-label {
-    margin-bottom: 20rpx;
-}
-
-.input-label text {
-    font-size: 28rpx;
-    color: #333333;
-    font-weight: 500;
-}
-
-.input-container {
-    border: 2rpx solid #e0e0e0;
-    border-radius: 12rpx;
-    padding: 24rpx;
-    background: #f8f9fa;
-}
-
-.input {
-    font-size: 28rpx;
-    color: #333333;
-}
-
-.placeholder {
-    color: #999999;
-    font-size: 28rpx;
-}
-
-/* 验证码容器 */
-.captcha-container {
-    flex-direction: row;
-    align-items: center;
-    gap: 20rpx;
-}
-
-.captcha-input {
-    flex: 1;
-}
-
-.captcha-img {
-    width: 200rpx;
-    height: 80rpx;
-    border: 2rpx solid #e0e0e0;
-    border-radius: 12rpx;
-    background: #f8f9fa;
-    justify-content: center;
-    align-items: center;
+    margin: 24rpx 24rpx 0;
+    height: 320rpx;
+    border-radius: 24rpx;
     overflow: hidden;
+    position: relative;
+    box-shadow: 0 8rpx 32rpx rgba(0,0,0,0.14);
 }
+.swiper { width: 100%; height: 100%; }
+.swiper-image { width: 100%; height: 100%; }
 
-.captcha-image {
-    width: 100%;
-    height: 100%;
-}
-
-.captcha-loading {
-    font-size: 24rpx;
-    color: #999999;
-}
-
-/* 表单选项 */
-.form-options {
-    flex-direction: row;
-    justify-content: space-between;
+/* 标题区 */
+.page-title-box {
     align-items: center;
-    margin-bottom: 50rpx;
+    padding: 24rpx 0 20rpx;
 }
-
-.remember-me {
-    flex-direction: row;
-    align-items: center;
-}
-
-.checkbox {
-    width: 32rpx;
-    height: 32rpx;
-    border: 2rpx solid #cccccc;
-    border-radius: 6rpx;
-    margin-right: 16rpx;
-    justify-content: center;
-    align-items: center;
-}
-
-.checkbox.checked {
-    background: #1890ff;
-    border-color: #1890ff;
-}
-
-.checkmark {
-    color: #ffffff;
-    font-size: 24rpx;
-    font-weight: bold;
-}
-
-.option-text {
-    font-size: 26rpx;
-    color: #666666;
-}
-
-.link {
-    color: #1890ff;
-}
-
-/* 登录按钮 */
-.login-button {
-    background: #1890ff;
-    border-radius: 12rpx;
-    padding: 28rpx;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 30rpx;
-}
-
-.login-button:active {
-    opacity: 0.9;
-    background: #096dd9;
-}
-
-.login-button-text {
+.page-title {
     font-size: 32rpx;
     font-weight: bold;
-    color: #ffffff;
+    color: #333333;
+    letter-spacing: 2rpx;
 }
 
-/* 注册链接 */
-.register-link {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20rpx;
+.login-form {
+    margin: 30rpx 36rpx 0; border-radius: 24rpx;
+    padding: 48rpx 40rpx 40rpx;
+    box-shadow: 0 8rpx 40rpx rgba(0,0,0,0.10);
+    position: relative; z-index: 10;
 }
+.form-title { margin-bottom: 44rpx; align-items: center; }
+.title-text { font-size: 32rpx; font-weight: bold; }
+.title-line { width: 48rpx; height: 6rpx; border-radius: 3rpx; margin-top: 10rpx; }
 
-.register-text {
-    font-size: 26rpx;
-    color: #666666;
-    margin-right: 10rpx;
+.input-group { margin-bottom: 32rpx; }
+.input-icon-wrap {
+    flex-direction: row; align-items: center;
+    border-radius: 14rpx; padding: 22rpx 24rpx;
 }
+.input-icon { font-size: 30rpx; margin-right: 18rpx; width: 36rpx; text-align: center; }
+.input { flex: 1; font-size: 28rpx; }
+.placeholder { color: #b0b8c4; font-size: 28rpx; }
 
-/* 底部版权 */
-.footer {
-    margin-top: 60rpx;
-    padding: 40rpx 0;
-    align-items: center;
-    background: #f5f5f5;
+.form-options {
+    flex-direction: row; justify-content: space-between;
+    align-items: center; margin-bottom: 44rpx;
 }
+.remember-me { flex-direction: row; align-items: center; }
+.checkbox {
+    width: 32rpx; height: 32rpx; border: 2rpx solid #ccc;
+    border-radius: 6rpx; margin-right: 14rpx;
+    justify-content: center; align-items: center;
+}
+.checkmark { color: #fff; font-size: 22rpx; font-weight: bold; }
+.option-text { font-size: 26rpx; }
 
-.copyright {
-    font-size: 24rpx;
-    color: #666666;
-    margin-bottom: 20rpx;
+.login-button {
+    border-radius: 14rpx; padding: 28rpx;
+    align-items: center; justify-content: center;
+    margin-bottom: 28rpx; box-shadow: 0 6rpx 20rpx rgba(21,101,192,0.3);
 }
+.login-button:active { opacity: 0.88; }
+.login-button.disabled { opacity: 0.6; }
+.login-button-text { font-size: 32rpx; font-weight: bold; color: #fff; letter-spacing: 2rpx; }
 
-.about-link {
-    padding: 10rpx 20rpx;
-}
+.register-link { flex-direction: row; justify-content: center; align-items: center; }
+.register-text { font-size: 26rpx; margin-right: 8rpx; }
 
-.about-link .link {
-    font-size: 24rpx;
-    color: #1890ff;
-}
+.footer { margin-top: 48rpx; padding: 30rpx 0 40rpx; align-items: center; }
+.copyright { font-size: 22rpx; color: #aaa; margin-bottom: 14rpx; }
+.about-link { padding: 8rpx 20rpx; }
 </style>

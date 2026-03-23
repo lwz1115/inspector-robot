@@ -41,6 +41,13 @@
                 "navigationBarTitleText": "我的",
                 "navigationStyle": "custom"
             }
+        },
+        {
+            "path": "pages/theme/theme",
+            "style": {
+                "navigationBarTitleText": "主题设置",
+                "navigationStyle": "custom"
+            }
         }
     ],
     "globalStyle": {

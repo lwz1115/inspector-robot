@@ -52,8 +52,14 @@
     </node>
 
     <!-- rosbridge：前端 WebSocket 直连 ROS topics -->
+    <!-- send_action_goals_in_new_thread 避免阻塞，fragment_timeout 防止大消息超时 -->
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
         <arg name="port" value="9090"/>
+        <arg name="send_action_goals_in_new_thread" value="true"/>
+        <arg name="fragment_timeout" value="600"/>
+        <arg name="delay_between_messages" value="0"/>
+        <arg name="max_message_size" value="10000000"/>
+        <arg name="unregister_timeout" value="10"/>
     </include>
 
 </launch>

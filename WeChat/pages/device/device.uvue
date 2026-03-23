@@ -1,171 +1,414 @@
-<template>
-  <view class="page"
-        :style="{ transform: `translateX(${translateX}px)`, transition: 'transform 0.1s ease' }"
-        @touchstart="onTouchStart"
-        @touchmove="onTouchMove"
-        @touchend="onTouchEnd">
-
-    <!-- 顶部标题栏 -->
-    <view class="header">
-      <view class="header-left">
-        <text class="header-title">设备监控</text>
-        <view class="status-dot" :class="isOnline ? 'online' : 'offline'"></view>
-        <text class="status-text">{{ isOnline ? '在线' : '离线' }}</text>
-      </view>
+﻿<template>
+  <view class="page" :style="'background:' + theme.bg + ';min-height:100vh;'">
+    <view class="header" :style="theme.headerBg.startsWith('linear') ? 'background:' + theme.headerBg : 'background:' + theme.primary">
+      <text class="header-title">设备监控</text>
       <view class="refresh-btn" @click="fetchData">
-        <text class="refresh-icon" :class="{ spinning: loading }">↻</text>
+        <text class="refresh-icon">{{ loading ? '⏳' : '🔄' }}</text>
       </view>
     </view>
 
-    <!-- 下拉刷新提示 -->
-    <view class="update-tip">
-      <text class="update-tip-text">最后更新：{{ lastUpdateTime || '--' }}</text>
+    <!-- 连接状态 -->
+    <view class="status-bar" :class="connected ? 'connected' : 'disconnected'">
+      <text class="status-dot">●</text>
+      <text class="status-text">{{ connected ? '已连接' : '未连接' }}</text>
+      <text class="status-time" v-if="lastUpdate">更新: {{ lastUpdate }}</text>
     </view>
 
-    <scroll-view scroll-y class="scroll-content">
+    <!-- 数据卡片区 -->
+    <scroll-view class="scroll-area" scroll-y>
+      <!-- 位置信息 -->
+      <view class="card" :style="'background:' + theme.card + ';border:1rpx solid ' + theme.border + ';'">
+        <view class="card-header" :style="'background:' + theme.inputBg + ';border-bottom:1rpx solid ' + theme.border + ';'">
+          <text class="card-icon">📍</text>
+          <text class="card-title" :style="valueStyle">位置信息</text>
+        </view>
+        <view class="card-body">
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">纬度</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.latitude || '--' }}</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">经度</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.longitude || '--' }}</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">海拔</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.altitude != null ? robotData.altitude + ' m' : '--' }}</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">速度</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.speed != null ? robotData.speed + ' km/h' : '--' }}</text>
+          </view>
+        </view>
+      </view>
 
-      <!-- 设备信息卡片 -->
-      <view class="card device-card">
+      <!-- IMU姿态 -->
+      <view class="card">
         <view class="card-header">
-          <text class="card-icon">🤖</text>
-          <text class="card-title">设备信息</text>
+          <text class="card-icon">🧭</text>
+          <text class="card-title" :style="valueStyle">IMU姿态</text>
         </view>
-        <view class="device-info-row">
-          <text class="device-id">{{ robotData.deviceId || '--' }}</text>
-          <view class="battery-tag" :class="batteryTagClass">
-            <text class="battery-tag-text">{{ robotData.batteryLevel != null ? robotData.batteryLevel + '%' : '--' }}</text>
+        <view class="card-body">
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">Roll（横滚）</text>
+            <text class="data-value" :style="valueStyle">{{ formatAngle(robotData.roll) }}</text>
           </view>
-        </view>
-        <!-- 电量进度条 -->
-        <view class="battery-bar-bg">
-          <view class="battery-bar-fill" :class="batteryTagClass" :style="{ width: (robotData.batteryLevel || 0) + '%' }"></view>
-        </view>
-        <view class="device-meta">
-          <text class="meta-text">电压：{{ robotData.voltage != null ? robotData.voltage.toFixed(2) + ' V' : '--' }}</text>
-          <text class="meta-text">速度：{{ robotData.speed != null ? robotData.speed.toFixed(1) + ' km/h' : '--' }}</text>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">Pitch（俯仰）</text>
+            <text class="data-value" :style="valueStyle">{{ formatAngle(robotData.pitch) }}</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">Yaw（偏航）</text>
+            <text class="data-value" :style="valueStyle">{{ formatAngle(robotData.yaw) }}</text>
+          </view>
         </view>
       </view>
 
-      <!-- 环境数据 -->
-      <view class="section-title">
-        <text class="section-title-text">🌡️ 环境数据</text>
-      </view>
-      <view class="grid-2">
-        <!-- 温度 -->
-        <view class="metric-card">
-          <text class="metric-icon">🌡️</text>
-          <text class="metric-label">温度</text>
-          <view class="metric-value-row">
-            <text class="metric-value" :style="{ color: tempColor }">
-              {{ robotData.temperature != null ? robotData.temperature.toFixed(1) : '--' }}
+      <!-- 激光雷达 -->
+      <view class="card">
+        <view class="card-header">
+          <text class="card-icon">📡</text>
+          <text class="card-title" :style="valueStyle">激光雷达</text>
+        </view>
+        <view class="card-body">
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">状态</text>
+            <text class="data-value" :class="robotData.lidarOnline ? 'online' : 'offline'">
+              {{ robotData.lidarOnline ? '在线' : '离线' }}
             </text>
-            <text class="metric-unit">℃</text>
           </view>
-          <view class="metric-bar-bg">
-            <view class="metric-bar-fill temp-fill" :style="{ width: tempPercent + '%' }"></view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">最近距离</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.lidarMinDist != null ? robotData.lidarMinDist + ' m' : '--' }}</text>
+          </view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">点云数量</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.lidarPoints != null ? robotData.lidarPoints : '--' }}</text>
           </view>
         </view>
+      </view>
 
-        <!-- 湿度 -->
-        <view class="metric-card">
-          <text class="metric-icon">💧</text>
-          <text class="metric-label">湿度</text>
-          <view class="metric-value-row">
-            <text class="metric-value" :style="{ color: humiColor }">
-              {{ robotData.humidity != null ? robotData.humidity.toFixed(1) : '--' }}
+      <!-- 摄像头 -->
+      <view class="card">
+        <view class="card-header">
+          <text class="card-icon">📷</text>
+          <text class="card-title" :style="valueStyle">摄像头</text>
+        </view>
+        <view class="card-body">
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">状态</text>
+            <text class="data-value" :class="robotData.cameraOnline ? 'online' : 'offline'">
+              {{ robotData.cameraOnline ? '在线' : '离线' }}
             </text>
-            <text class="metric-unit">%</text>
           </view>
-          <view class="metric-bar-bg">
-            <view class="metric-bar-fill humi-fill" :style="{ width: (robotData.humidity || 0) + '%' }"></view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">分辨率</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.cameraResolution || '--' }}</text>
           </view>
         </view>
       </view>
 
-      <!-- 烟雾检测 -->
-      <view class="smoke-card" :class="smokeCardClass">
-        <view class="smoke-header">
-          <text class="smoke-icon">💨</text>
-          <text class="smoke-title">烟雾检测</text>
-          <view class="smoke-badge" :class="smokeBadgeClass">
-            <text class="smoke-badge-text">{{ smokeStatusText }}</text>
-          </view>
+      <!-- 系统状态 -->
+      <view class="card">
+        <view class="card-header">
+          <text class="card-icon">💻</text>
+          <text class="card-title" :style="valueStyle">系统状态</text>
         </view>
-        <view class="smoke-body">
-          <view class="smoke-value-wrap">
-            <text class="smoke-value" :style="{ color: smokeColor }">{{ robotData.smokeValue != null ? robotData.smokeValue : '--' }}</text>
-            <text class="smoke-unit">ADC</text>
-          </view>
-          <view class="smoke-scale">
-            <view class="scale-item safe">
-              <text class="scale-label">洁净</text>
-              <text class="scale-range">50~150</text>
-            </view>
-            <view class="scale-item warn">
-              <text class="scale-label">轻微</text>
-              <text class="scale-range">200~400</text>
-            </view>
-            <view class="scale-item danger">
-              <text class="scale-label">危险</text>
-              <text class="scale-range">500+</text>
+        <view class="card-body">
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">CPU使用率</text>
+            <view class="progress-wrap">
+              <view class="progress-bar">
+                <view class="progress-fill" :style="{ width: cpuPercent + '%', background: cpuColor }"></view>
+              </view>
+              <text class="progress-text">{{ robotData.cpuUsage != null ? robotData.cpuUsage + '%' : '--' }}</text>
             </view>
           </view>
-          <view class="smoke-bar-bg">
-            <view class="smoke-bar-fill" :style="{ width: smokePercent + '%', background: smokeColor }"></view>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">内存使用率</text>
+            <view class="progress-wrap">
+              <view class="progress-bar">
+                <view class="progress-fill" :style="{ width: memPercent + '%', background: memColor }"></view>
+              </view>
+              <text class="progress-text">{{ robotData.memUsage != null ? robotData.memUsage + '%' : '--' }}</text>
+            </view>
           </view>
-        </view>
-        <!-- 告警信息 -->
-        <view v-if="robotData.alertMessage" class="alert-banner">
-          <text class="alert-text">⚠️ {{ robotData.alertMessage }}</text>
-        </view>
-      </view>
-
-      <!-- GPS 定位 -->
-      <view class="section-title">
-        <text class="section-title-text">📡 GPS 定位</text>
-      </view>
-      <view class="grid-2">
-        <view class="metric-card">
-          <text class="metric-icon">📍</text>
-          <text class="metric-label">经度</text>
-          <text class="metric-value coord-value">{{ robotData.longitude != null ? robotData.longitude.toFixed(6) : '--' }}</text>
-        </view>
-        <view class="metric-card">
-          <text class="metric-icon">📍</text>
-          <text class="metric-label">纬度</text>
-          <text class="metric-value coord-value">{{ robotData.latitude != null ? robotData.latitude.toFixed(6) : '--' }}</text>
-        </view>
-        <view class="metric-card">
-          <text class="metric-icon">🛰️</text>
-          <text class="metric-label">卫星数</text>
-          <view class="metric-value-row">
-            <text class="metric-value">{{ robotData.satellites != null ? robotData.satellites : '--' }}</text>
-            <text class="metric-unit">颗</text>
-          </view>
-        </view>
-        <view class="metric-card">
-          <text class="metric-icon">⛰️</text>
-          <text class="metric-label">海拔</text>
-          <view class="metric-value-row">
-            <text class="metric-value">{{ robotData.altitude != null ? robotData.altitude.toFixed(1) : '--' }}</text>
-            <text class="metric-unit">m</text>
+          <view class="data-row">
+            <text class="data-label" :style="labelStyle">运行时长</text>
+            <text class="data-value" :style="valueStyle">{{ robotData.uptime || '--' }}</text>
           </view>
         </view>
       </view>
 
-      <!-- 人员检测 -->
-      <view class="person-card">
-        <view class="person-left">
-          <text class="person-icon">👥</text>
-          <view>
-            <text class="person-label">检测到人员</text>
-            <text class="person-sub">实时人脸识别</text>
-          </view>
-        </view>
-        <text class="person-count">{{ robotData.personCount != null ? robotData.personCount : '--' }}</text>
-      </view>
-
+      <!-- 底部间距 -->
       <view style="height: 40rpx;"></view>
     </scroll-view>
   </view>
 </template>
+
+<script>
+import { BASE } from '@/config/server.js'
+import { getThemeVars } from '@/config/theme.js'
+
+const POLL_INTERVAL = 3000
+
+export default {
+  data() {
+    return {
+      loading: false,
+      connected: false,
+      lastUpdate: '',
+      pollTimer: null,
+      robotData: {},
+      theme: getThemeVars()
+    }
+  },
+
+  computed: {
+    cardStyle()  { return 'background:' + this.theme.card + ';border:1rpx solid ' + this.theme.border + ';' },
+    cardHdStyle(){ return 'background:' + this.theme.inputBg + ';border-bottom:1rpx solid ' + this.theme.border + ';' },
+    labelStyle() { return 'color:' + this.theme.textSub + ';' },
+    valueStyle() { return 'color:' + this.theme.text + ';' },
+    cpuPercent() {
+      const v = parseFloat(this.robotData.cpuUsage)
+      return isNaN(v) ? 0 : Math.min(v, 100)
+    },
+    memPercent() {
+      const v = parseFloat(this.robotData.memUsage)
+      return isNaN(v) ? 0 : Math.min(v, 100)
+    },
+    cpuColor() {
+      return this.cpuPercent > 80 ? '#f5222d' : this.cpuPercent > 60 ? '#fa8c16' : '#52c41a'
+    },
+    memColor() {
+      return this.memPercent > 80 ? '#f5222d' : this.memPercent > 60 ? '#fa8c16' : '#52c41a'
+    }
+  },
+
+  onShow() {
+    this.theme = getThemeVars()
+    this.fetchData()
+    this.startPolling()
+  },
+
+  onHide() {
+    this.stopPolling()
+  },
+
+  onUnload() {
+    this.stopPolling()
+  },
+
+  methods: {
+    startPolling() {
+      this.stopPolling()
+      this.pollTimer = setInterval(() => { this.fetchData() }, POLL_INTERVAL)
+    },
+
+    stopPolling() {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer)
+        this.pollTimer = null
+      }
+    },
+
+    async fetchData() {
+      if (this.loading) return
+      this.loading = true
+      try {
+        const res = await uni.request({
+          url: BASE + '/robot-data',
+          method: 'GET',
+          timeout: 5000
+        })
+        if (res.statusCode === 200 && res.data) {
+          this.robotData = res.data
+          this.connected = true
+          const now = new Date()
+          this.lastUpdate = now.getHours() + ':' +
+            String(now.getMinutes()).padStart(2, '0') + ':' +
+            String(now.getSeconds()).padStart(2, '0')
+        } else {
+          this.connected = false
+        }
+      } catch (e) {
+        this.connected = false
+      } finally {
+        this.loading = false
+      }
+    },
+
+    formatAngle(val) {
+      if (val == null || val === '') return '--'
+      return parseFloat(val).toFixed(2) + '°'
+    }
+  }
+}
+</script>
+
+<style scoped>
+.page {
+  flex: 1;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 顶部标题 */
+.header {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: #1890ff;
+  padding: 50rpx 30rpx 30rpx;
+}
+
+.header-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.refresh-btn {
+  padding: 10rpx 20rpx;
+}
+
+.refresh-icon {
+  font-size: 40rpx;
+}
+
+/* 状态栏 */
+.status-bar {
+  flex-direction: row;
+  align-items: center;
+  padding: 16rpx 30rpx;
+}
+
+.connected {
+  background: #f6ffed;
+  border-bottom: 2rpx solid #b7eb8f;
+}
+
+.disconnected {
+  background: #fff2f0;
+  border-bottom: 2rpx solid #ffccc7;
+}
+
+.status-dot {
+  font-size: 20rpx;
+  margin-right: 10rpx;
+}
+
+.connected .status-dot { color: #52c41a; }
+.disconnected .status-dot { color: #f5222d; }
+
+.status-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  margin-right: 20rpx;
+}
+
+.connected .status-text { color: #52c41a; }
+.disconnected .status-text { color: #f5222d; }
+
+.status-time {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+/* 滚动区域 */
+.scroll-area {
+  flex: 1;
+  padding: 20rpx;
+}
+
+/* 卡片 */
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  flex-direction: row;
+  align-items: center;
+  padding: 24rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  background: #fafafa;
+}
+
+.card-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.card-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.card-body {
+  padding: 10rpx 0;
+}
+
+/* 数据行 */
+.data-row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22rpx 30rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.data-row:last-child {
+  border-bottom: none;
+}
+
+.data-label {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.data-value {
+  font-size: 26rpx;
+  color: #333333;
+  font-weight: 500;
+}
+
+.online { color: #52c41a; }
+.offline { color: #f5222d; }
+
+/* 进度条 */
+.progress-wrap {
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.progress-bar {
+  width: 160rpx;
+  height: 16rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin-right: 16rpx;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 26rpx;
+  color: #333333;
+  font-weight: 500;
+  min-width: 60rpx;
+  text-align: right;
+}
+</style>
+

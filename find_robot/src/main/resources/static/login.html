@@ -6,241 +6,154 @@
   <title>园区巡检监控系统 - 登录</title>
   <link href="//unpkg.com/layui@2.13.0/dist/css/layui.css" rel="stylesheet">
   <style>
-    body {
-      background: linear-gradient(135deg, #0c1a2d 0%, #1a3a5f 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: 'Microsoft YaHei', sans-serif;
-    }
-
-    .login-container {
-      width: 400px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .login-container:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-    }
-
-    .login-header {
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      padding: 30px 20px;
-      text-align: center;
-      color: white;
-    }
-
-    .login-header h2 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .login-header p {
-      margin: 10px 0 0;
-      opacity: 0.9;
-      font-size: 14px;
-    }
-
-    .login-body {
-      padding: 30px;
-    }
-
-    .layui-form-item {
-      margin-bottom: 20px;
-    }
-
-    .layui-input-wrap {
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid #e6e6e6;
-      transition: all 0.3s ease;
-    }
-
-    .layui-input-wrap:focus-within {
-      border-color: #00f2fe;
-      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.2);
-    }
-
-    .layui-input-prefix {
-      background-color: #f8f8f8;
-    }
-
-    .layui-input {
-      border: none;
-      background: transparent;
-    }
-
-    .layui-btn {
-      background: linear-gradient(135deg, #00f2fe, #4facfe);
-      border: none;
-      border-radius: 6px;
-      height: 44px;
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .layui-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
-    }
-
-    .login-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-
-    .login-footer a {
-      color: #00f2fe;
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-
-    .login-footer a:hover {
-      color: #4facfe;
-      text-decoration: underline;
-    }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-    }
-
-    .remember-me .layui-form-checkbox {
-      margin-right: 5px;
-    }
-
-    .system-info {
-      text-align: center;
-      margin-top: 30px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 12px;
-    }
-
-    .system-info p {
-      margin: 5px 0;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .logo img {
-      height: 60px;
-    }
-
-    @media (max-width: 480px) {
-      .login-container {
-        width: 90%;
-        margin: 20px auto;
-      }
-    }
+    *{box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0c1a2d,#1a3a5f);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;font-family:'Microsoft YaHei',sans-serif}
+    .wrap{display:flex;flex-direction:column;align-items:center;gap:20px}
+    .card{width:400px;background:rgba(255,255,255,.96);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);overflow:hidden;transition:.3s}
+    .card:hover{transform:translateY(-4px);box-shadow:0 15px 35px rgba(0,0,0,.25)}
+    .card-header{background:linear-gradient(135deg,#00f2fe,#4facfe);padding:28px 20px;text-align:center;color:#fff}
+    .card-header h2{margin:0;font-size:22px}
+    .card-header p{margin:8px 0 0;opacity:.9;font-size:13px}
+    .card-body{padding:28px}
+    .layui-form-item{margin-bottom:18px}
+    .layui-input-wrap{border-radius:6px;overflow:hidden;border:1px solid #e0e0e0;transition:.3s}
+    .layui-input-wrap:focus-within{border-color:#00d4ff;box-shadow:0 0 0 2px rgba(0,212,255,.18)}
+    .layui-input-prefix{background:#f8f8f8}
+    .layui-input{border:none;background:transparent}
+    .layui-btn{background:linear-gradient(135deg,#00f2fe,#4facfe);border:none;border-radius:6px;height:42px;font-size:15px;transition:.3s}
+    .layui-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,212,255,.35)}
+    .layui-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+    .footer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:13px}
+    .footer-row a{color:#00c4e8;text-decoration:none}
+    .footer-row a:hover{text-decoration:underline}
+    .sys-info{text-align:center;color:rgba(255,255,255,.6);font-size:12px}
+    .sys-info p{margin:4px 0}
+    @media(max-width:440px){.card{width:92%}}
   </style>
 </head>
 <body>
-<div>
-  <div class="login-container">
-    <div class="login-header">
-      <h2>园区巡检监控系统</h2>
-      <p>欢迎登录，请使用您的账号密码</p>
+<div class="wrap">
+  <div class="card">
+    <div class="card-header">
+      <h2>🏭 园区巡检监控系统</h2>
+      <p>欢迎登录，请输入账号密码</p>
     </div>
-    <div class="login-body">
-      <form class="layui-form">
+    <div class="card-body">
+      <form class="layui-form" id="loginForm">
         <div class="layui-form-item">
           <div class="layui-input-wrap">
-            <div class="layui-input-prefix">
-              <i class="layui-icon layui-icon-username"></i>
-            </div>
-            <input type="text" name="username" value="" lay-verify="required" placeholder="用户名" lay-reqtext="请填写用户名" autocomplete="off" class="layui-input">
+            <div class="layui-input-prefix"><i class="layui-icon layui-icon-username"></i></div>
+            <input type="text" name="username" id="username" lay-verify="required" placeholder="用户名" autocomplete="username" class="layui-input" maxlength="50">
           </div>
         </div>
         <div class="layui-form-item">
           <div class="layui-input-wrap">
-            <div class="layui-input-prefix">
-              <i class="layui-icon layui-icon-password"></i>
-            </div>
-            <input type="password" name="password" value="" lay-verify="required" placeholder="密码" autocomplete="off" class="layui-input" lay-affix="eye">
+            <div class="layui-input-prefix"><i class="layui-icon layui-icon-password"></i></div>
+            <input type="password" name="password" id="password" lay-verify="required" placeholder="密码" autocomplete="current-password" class="layui-input" lay-affix="eye" maxlength="255">
           </div>
         </div>
-        <div class="login-footer">
-          <div class="remember-me">
-            <input type="checkbox" name="remember" lay-skin="primary" title="记住密码">
-          </div>
-          <a href="register.html">注册新账号</a>
+        <div class="footer-row">
+          <label><input type="checkbox" id="rememberMe" lay-skin="primary"> 记住用户名</label>
+          <div><a href="forgot.html" style="margin-right:12px;color:#aaa">忘记密码？</a><a href="register.html">注册新账号</a></div>
         </div>
         <div class="layui-form-item">
-          <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login">登录</button>
+          <button class="layui-btn layui-btn-fluid" lay-submit lay-filter="login" id="loginBtn">登 录</button>
         </div>
       </form>
     </div>
   </div>
-  <div class="system-info">
+  <div class="sys-info">
     <p>园区智能巡检监控系统 v2.0</p>
-    <p>© 2023 智能园区技术有限公司 版权所有</p>
   </div>
 </div>
 
 <script src="//unpkg.com/layui@2.13.0/dist/layui.js"></script>
 <script>
-  layui.use(function(){
-    var $ = layui.$;
-    var form = layui.form;
-    var layer = layui.layer;
+layui.use(function () {
+  var form = layui.form, layer = layui.layer, $ = layui.$;
+  var BASE = window.location.protocol + '//' + window.location.hostname + ':8080';
 
-    // 登录提交：使用POST请求
-    form.on('submit(login)', function(data){
-      var field = data.field;
-      console.log('登录提交:', field);
+  // 已登录则直接跳转
+  if (localStorage.getItem('userId')) {
+    window.location.replace('index.html');
+    return;
+  }
 
-      var loadIndex = layer.load(1, {shade: [0.1, '#fff']});
+  // 恢复记住的用户名
+  var saved = localStorage.getItem('rememberedUser');
+  if (saved) { $('#username').val(saved); $('#rememberMe').prop('checked', true); form.render(); }
 
-      // 使用POST请求
-      $.ajax({
-        url: window.location.protocol + '//' + window.location.hostname + ':8080/api/auth/login',
-        type: 'POST',
-        data: {
-          username: field.username,
-          password: field.password
-        },
-        success: function(res) {
-          layer.close(loadIndex);
-          console.log('登录响应:', res);
-          if(res.success) {
-            // 保存用户信息到本地存储
-            localStorage.setItem('currentUsername', field.username);
-            localStorage.setItem('userId', res.userId);
+  form.on('submit(login)', function (data) {
+    var f = data.field;
+    var username = (f.username || '').trim();
+    var password = f.password || '';
 
-            layer.msg('登录成功！', {icon: 1, time: 1500}, function(){
-              window.location.href = '/index.html';
-            });
+    if (!username) { layer.msg('请输入用户名', {icon: 2}); return false; }
+    if (!password) { layer.msg('请输入密码',   {icon: 2}); return false; }
+
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    var load = layer.load(1, {shade: [0.15, '#000']});
+
+    $.ajax({
+      url: BASE + '/api/auth/login',
+      type: 'POST',
+      data: { username: username, password: password },
+      timeout: 8000,
+      success: function (res) {
+        layer.close(load);
+        btn.disabled = false;
+        if (res && res.success) {
+          // 记住用户名
+          if ($('#rememberMe').prop('checked')) localStorage.setItem('rememberedUser', username);
+          else localStorage.removeItem('rememberedUser');
+
+          localStorage.setItem('userId',          res.userId);
+          localStorage.setItem('currentUsername', res.username);
+          localStorage.setItem('nickname',        res.nickname || res.username);
+          localStorage.setItem('loginTime',       Date.now());
+
+          // 记录登录历史（最多保留10条）
+          var history = [];
+          try { history = JSON.parse(localStorage.getItem('loginHistory') || '[]'); } catch(_) {}
+          var now = new Date();
+          var timeStr = now.getFullYear() + '-' +
+            String(now.getMonth()+1).padStart(2,'0') + '-' +
+            String(now.getDate()).padStart(2,'0') + ' ' +
+            String(now.getHours()).padStart(2,'0') + ':' +
+            String(now.getMinutes()).padStart(2,'0');
+          history.unshift({ time: timeStr, ip: window.location.hostname });
+          if (history.length > 10) history = history.slice(0, 10);
+          localStorage.setItem('loginHistory', JSON.stringify(history));
+          // 今日登录次数
+          var todayKey = now.toDateString();
+          if (localStorage.getItem('sessionDay') !== todayKey) {
+            localStorage.setItem('sessionDay', todayKey);
+            localStorage.setItem('todaySessions', '1');
           } else {
-            layer.msg(res.message, {icon: 2});
+            localStorage.setItem('todaySessions', String(parseInt(localStorage.getItem('todaySessions') || '0') + 1));
           }
-        },
-        error: function(xhr, status, error) {
-          layer.close(loadIndex);
-          console.error('登录请求失败:', error);
-          if (xhr.status === 0) {
-            layer.msg('无法连接到服务器，请检查后端服务是否启动', {icon: 2});
-          } else {
-            layer.msg('登录失败：' + error, {icon: 2});
-          }
+
+          layer.msg('登录成功', {icon: 1, time: 1000}, function () {
+            window.location.href = 'index.html';
+          });
+        } else {
+          layer.msg(res.message || '登录失败', {icon: 2});
         }
-      });
-      return false;
+      },
+      error: function (xhr) {
+        layer.close(load);
+        btn.disabled = false;
+        if (xhr.status === 0 || xhr.statusText === 'timeout') {
+          layer.msg('连接超时，请检查网络或后端服务', {icon: 2});
+        } else {
+          layer.msg('请求失败（' + xhr.status + '）', {icon: 2});
+        }
+      }
     });
+    return false;
   });
+});
 </script>
 </body>
 </html>

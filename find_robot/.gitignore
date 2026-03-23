@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 头像上传目录（保留目录结构，忽略实际文件）###
+uploads/avatars/*
+!uploads/avatars/.gitkeep

@@ -18,4 +18,5 @@ public class User {
     private String email;
     private String role = "USER";
     private LocalDateTime createTime;
+    private String avatar; // 头像 Base64 数据（data:image/jpeg;base64,...）
 }

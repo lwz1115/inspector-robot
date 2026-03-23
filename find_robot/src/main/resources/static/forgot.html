@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>找回密码 - 园区巡检监控系统</title>
+  <link href="//unpkg.com/layui@2.13.0/dist/css/layui.css" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    body{background:linear-gradient(135deg,#0c1a2d,#1a3a5f);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;font-family:'Microsoft YaHei',sans-serif}
+    .wrap{display:flex;flex-direction:column;align-items:center;gap:20px}
+    .card{width:420px;background:rgba(255,255,255,.96);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);overflow:hidden;transition:.3s}
+    .card:hover{transform:translateY(-4px);box-shadow:0 15px 35px rgba(0,0,0,.25)}
+    .card-header{background:linear-gradient(135deg,#00f2fe,#4facfe);padding:26px 20px;text-align:center;color:#fff}
+    .card-header h2{margin:0;font-size:22px}
+    .card-header p{margin:8px 0 0;opacity:.9;font-size:13px}
+    .card-body{padding:28px}
+    /* 步骤条 */
+    .steps{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:24px}
+    .step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+    .step-dot{width:28px;height:28px;border-radius:50%;background:#e0e0e0;color:#999;font-size:13px;font-weight:bold;display:flex;align-items:center;justify-content:center;transition:.3s}
+    .step-dot.active{background:linear-gradient(135deg,#00f2fe,#4facfe);color:#fff}
+    .step-dot.done{background:#52c41a;color:#fff}
+    .step-label{font-size:11px;color:#999}
+    .step-label.active{color:#00c4e8}
+    .step-line{flex:1;height:2px;background:#e0e0e0;margin-bottom:18px;transition:.3s}
+    .step-line.done{background:#52c41a}
+    /* 表单 */
+    .layui-form-item{margin-bottom:16px}
+    .layui-input-wrap{border-radius:6px;overflow:hidden;border:1px solid #e0e0e0;transition:.3s}
+    .layui-input-wrap:focus-within{border-color:#00d4ff;box-shadow:0 0 0 2px rgba(0,212,255,.18)}
+    .layui-input-prefix{background:#f8f8f8}
+    .layui-input{border:none;background:transparent}
+    .layui-btn{background:linear-gradient(135deg,#00f2fe,#4facfe);border:none;border-radius:6px;height:42px;font-size:15px;transition:.3s}
+    .layui-btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,212,255,.35)}
+    .layui-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+    .code-row{display:flex;gap:8px}
+    .code-row .layui-input-wrap{flex:1}
+    .send-btn{flex-shrink:0;height:38px;padding:0 14px;font-size:13px;white-space:nowrap;background:linear-gradient(135deg,#00f2fe,#4facfe);border:none;border-radius:6px;color:#fff;cursor:pointer;transition:.3s}
+    .send-btn:hover:not(:disabled){box-shadow:0 3px 10px rgba(0,212,255,.4)}
+    .send-btn:disabled{opacity:.6;cursor:not-allowed}
+    .hint{font-size:12px;color:#888;margin-bottom:14px;padding:8px 12px;background:#f5f5f5;border-radius:6px;line-height:1.6}
+    .hint.success{background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f}
+    .footer-row{text-align:center;margin-top:12px;font-size:13px}
+    .footer-row a{color:#00c4e8;text-decoration:none}
+    .footer-row a:hover{text-decoration:underline}
+    .sys-info{text-align:center;color:rgba(255,255,255,.6);font-size:12px}
+    .sys-info p{margin:4px 0}
+    .pwd-strength{font-size:12px;margin-top:4px;height:16px}
+    .pwd-strength.weak{color:#ff4d4f}
+    .pwd-strength.medium{color:#faad14}
+    .pwd-strength.strong{color:#52c41a}
+    @media(max-width:460px){.card{width:94%}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="card-header">
+      <h2>🔑 找回密码</h2>
+      <p>通过绑定邮箱验证身份，重置密码</p>
+    </div>
+    <div class="card-body">
+      <!-- 步骤条 -->
+      <div class="steps">
+        <div class="step">
+          <div class="step-dot active" id="dot1">1</div>
+          <div class="step-label active" id="lbl1">验证账号</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step">
+          <div class="step-dot" id="dot2">2</div>
+          <div class="step-label" id="lbl2">邮箱验证</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step">
+          <div class="step-dot" id="dot3">3</div>
+          <div class="step-label" id="lbl3">重置密码</div>
+        </div>
+      </div>
+
+      <!-- Step 1：输入用户名 -->
+      <div id="step1">
+        <div class="hint">输入您的用户名，系统将向绑定邮箱发送验证码</div>
+        <div class="layui-form-item">
+          <div class="layui-input-wrap">
+            <div class="layui-input-prefix"><i class="layui-icon layui-icon-username"></i></div>
+            <input type="text" id="s1-username" placeholder="请输入用户名" autocomplete="username" class="layui-input" maxlength="50">
+          </div>
+        </div>
+        <button class="layui-btn layui-btn-fluid" id="s1-btn" onclick="step1Submit()">下一步</button>
+        <div class="footer-row"><a href="login.html">返回登录</a></div>
+      </div>
+
+      <!-- Step 2：输入验证码 -->
+      <div id="step2" style="display:none">
+        <div class="hint success" id="s2-hint">验证码已发送</div>
+        <div class="layui-form-item">
+          <div class="code-row">
+            <div class="layui-input-wrap">
+              <div class="layui-input-prefix"><i class="layui-icon layui-icon-vercode"></i></div>
+              <input type="text" id="s2-code" placeholder="6位邮箱验证码" autocomplete="one-time-code" class="layui-input" maxlength="6">
+            </div>
+            <button type="button" class="send-btn" id="resendBtn" onclick="resendCode()">重新发送</button>
+          </div>
+        </div>
+        <button class="layui-btn layui-btn-fluid" id="s2-btn" onclick="step2Submit()">验证</button>
+        <div class="footer-row"><a href="#" onclick="goStep(1);return false">← 上一步</a></div>
+      </div>
+
+      <!-- Step 3：设置新密码 -->
+      <div id="step3" style="display:none">
+        <div class="hint">请设置新密码，至少6位</div>
+        <div class="layui-form-item">
+          <div class="layui-input-wrap">
+            <div class="layui-input-prefix"><i class="layui-icon layui-icon-password"></i></div>
+            <input type="password" id="s3-pwd" placeholder="新密码（至少6位）" autocomplete="new-password" class="layui-input" maxlength="255" oninput="checkPwdStrength(this.value)">
+          </div>
+          <div class="pwd-strength" id="pwd-strength"></div>
+        </div>
+        <div class="layui-form-item">
+          <div class="layui-input-wrap">
+            <div class="layui-input-prefix"><i class="layui-icon layui-icon-password"></i></div>
+            <input type="password" id="s3-pwd2" placeholder="确认新密码" autocomplete="new-password" class="layui-input" maxlength="255">
+          </div>
+        </div>
+        <button class="layui-btn layui-btn-fluid" id="s3-btn" onclick="step3Submit()">重置密码</button>
+      </div>
+
+    </div>
+  </div>
+  <div class="sys-info"><p>园区智能巡检监控系统 v2.0</p></div>
+</div>
+
+<script src="//unpkg.com/layui@2.13.0/dist/layui.js"></script>
+<script>
+var BASE = window.location.protocol + '//' + window.location.hostname + ':8080';
+var currentUsername = '';
+var countdownTimer = null;
+
+// ── 步骤切换 ──────────────────────────────────────────────
+function goStep(n) {
+  [1, 2, 3].forEach(function(i) {
+    document.getElementById('step' + i).style.display = i === n ? 'block' : 'none';
+    var dot = document.getElementById('dot' + i);
+    var lbl = document.getElementById('lbl' + i);
+    if (i < n)      { dot.className = 'step-dot done';   lbl.className = 'step-label'; }
+    else if (i === n){ dot.className = 'step-dot active'; lbl.className = 'step-label active'; }
+    else            { dot.className = 'step-dot';         lbl.className = 'step-label'; }
+  });
+  if (document.getElementById('line1')) {
+    document.getElementById('line1').className = 'step-line' + (n > 1 ? ' done' : '');
+    document.getElementById('line2').className = 'step-line' + (n > 2 ? ' done' : '');
+  }
+}
+
+// ── Step1：发送验证码 ─────────────────────────────────────
+function step1Submit() {
+  var username = document.getElementById('s1-username').value.trim();
+  if (!username) { layui.layer.msg('请输入用户名', {icon: 2}); return; }
+
+  var btn = document.getElementById('s1-btn');
+  btn.disabled = true;
+  var load = layui.layer.load(1, {shade: [0.15, '#000']});
+
+  layui.$.ajax({
+    url: BASE + '/api/auth/forgot/send',
+    type: 'POST',
+    data: { username: username },
+    timeout: 10000,
+    success: function(res) {
+      layui.layer.close(load);
+      btn.disabled = false;
+      if (res && res.success) {
+        currentUsername = username;
+        document.getElementById('s2-hint').textContent = res.message;
+        goStep(2);
+        startCountdown(document.getElementById('resendBtn'), 60);
+      } else {
+        layui.layer.msg(res.message || '发送失败', {icon: 2});
+      }
+    },
+    error: function(xhr) {
+      layui.layer.close(load);
+      btn.disabled = false;
+      layui.layer.msg(xhr.status === 0 ? '连接超时，请检查网络' : '请求失败（' + xhr.status + '）', {icon: 2});
+    }
+  });
+}
+
+// ── Step2：验证验证码（直接进入Step3，真正重置在Step3提交时） ──
+function step2Submit() {
+  var code = document.getElementById('s2-code').value.trim();
+  if (!code)          { layui.layer.msg('请输入验证码', {icon: 2}); return; }
+  if (code.length !== 6) { layui.layer.msg('验证码为6位数字', {icon: 2}); return; }
+  // 验证码在Step3提交时一并发给后端校验，这里只做格式检查后进入下一步
+  goStep(3);
+}
+
+// ── Step3：重置密码 ───────────────────────────────────────
+function step3Submit() {
+  var pwd  = document.getElementById('s3-pwd').value;
+  var pwd2 = document.getElementById('s3-pwd2').value;
+  var code = document.getElementById('s2-code').value.trim();
+
+  if (!pwd)           { layui.layer.msg('请输入新密码', {icon: 2}); return; }
+  if (pwd.length < 6) { layui.layer.msg('密码至少6位', {icon: 2}); return; }
+  if (pwd !== pwd2)   { layui.layer.msg('两次密码不一致', {icon: 2}); return; }
+
+  var btn = document.getElementById('s3-btn');
+  btn.disabled = true;
+  var load = layui.layer.load(1, {shade: [0.15, '#000']});
+
+  layui.$.ajax({
+    url: BASE + '/api/auth/forgot/reset',
+    type: 'POST',
+    data: { username: currentUsername, emailCode: code, newPassword: pwd },
+    timeout: 10000,
+    success: function(res) {
+      layui.layer.close(load);
+      btn.disabled = false;
+      if (res && res.success) {
+        layui.layer.msg('密码重置成功！', {icon: 1, time: 1500}, function() {
+          window.location.href = 'login.html';
+        });
+      } else {
+        layui.layer.msg(res.message || '重置失败', {icon: 2});
+        // 验证码失效则退回Step2重新获取
+        if (res.message && res.message.indexOf('验证码') !== -1) goStep(2);
+      }
+    },
+    error: function(xhr) {
+      layui.layer.close(load);
+      btn.disabled = false;
+      layui.layer.msg(xhr.status === 0 ? '连接超时' : '请求失败（' + xhr.status + '）', {icon: 2});
+    }
+  });
+}
+
+// ── 重新发送 ──────────────────────────────────────────────
+function resendCode() {
+  var btn = document.getElementById('resendBtn');
+  btn.disabled = true;
+  layui.$.ajax({
+    url: BASE + '/api/auth/forgot/send',
+    type: 'POST',
+    data: { username: currentUsername },
+    timeout: 10000,
+    success: function(res) {
+      if (res && res.success) {
+        layui.layer.msg('验证码已重新发送', {icon: 1});
+        startCountdown(btn, 60);
+      } else {
+        layui.layer.msg(res.message || '发送失败', {icon: 2});
+        btn.disabled = false;
+      }
+    },
+    error: function() { layui.layer.msg('网络异常', {icon: 2}); btn.disabled = false; }
+  });
+}
+
+function startCountdown(btn, seconds) {
+  clearInterval(countdownTimer);
+  var left = seconds;
+  btn.textContent = left + 's后重发';
+  countdownTimer = setInterval(function() {
+    left--;
+    if (left <= 0) { clearInterval(countdownTimer); btn.disabled = false; btn.textContent = '重新发送'; }
+    else btn.textContent = left + 's后重发';
+  }, 1000);
+}
+
+function checkPwdStrength(p) {
+  var el = document.getElementById('pwd-strength');
+  if (!p) { el.textContent = ''; el.className = 'pwd-strength'; return; }
+  var score = 0;
+  if (p.length >= 6) score++; if (p.length >= 10) score++;
+  if (/[a-z]/.test(p)) score++; if (/[A-Z]/.test(p)) score++;
+  if (/[0-9]/.test(p)) score++; if (/[^a-zA-Z0-9]/.test(p)) score++;
+  if (score <= 2)      { el.textContent = '密码强度：弱'; el.className = 'pwd-strength weak'; }
+  else if (score <= 4) { el.textContent = '密码强度：中'; el.className = 'pwd-strength medium'; }
+  else                 { el.textContent = '密码强度：强'; el.className = 'pwd-strength strong'; }
+}
+</script>
+</body>
+</html>

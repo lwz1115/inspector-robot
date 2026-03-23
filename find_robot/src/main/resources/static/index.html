@@ -5,77 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>园区巡检监控系统</title>
 <script src="https://webapi.amap.com/maps?v=1.4.15&key=c216de193661bf95f9891763d1837c8f"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Microsoft YaHei',sans-serif}
-:root{
-  --bg-dark:#1a1f2e;--bg-panel:#242938;--bg-card:#2d3347;--border:#3a4060;
-  --accent:#00d4ff;--accent2:#4facfe;--text:#e0e6f0;--text-muted:#8892a4;
-  --success:#52c41a;--warning:#faad14;--danger:#ff4d4f;
-  --sidebar-w:220px;--header-h:60px;
-}
-body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
-.layout{display:flex;height:100vh}
-.sidebar{width:var(--sidebar-w);background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
-.sidebar-logo{height:var(--header-h);display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:bold;color:var(--accent);gap:8px}
-.sidebar-nav{flex:1;padding:12px 0}
-.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;color:var(--text-muted);font-size:14px;transition:all .2s;border-left:3px solid transparent}
-.nav-item:hover{background:rgba(0,212,255,.06);color:var(--text)}
-.nav-item.active{background:rgba(0,212,255,.1);color:var(--accent);border-left-color:var(--accent)}
-.nav-item .icon{font-size:17px;width:20px;text-align:center}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{height:var(--header-h);background:var(--bg-panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0}
-.topbar-title{font-size:15px;color:var(--text-muted)}
-.topbar-right{display:flex;align-items:center;gap:16px}
-.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite}
-.status-dot.offline{background:var(--danger);animation:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.user-menu{position:relative}
-.user-btn{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;color:var(--text);transition:all .2s}
-.user-btn:hover{border-color:var(--accent)}
-.avatar{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#fff}
-.dropdown{position:absolute;right:0;top:calc(100% + 8px);background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;min-width:130px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;z-index:1000}
-.dropdown.show{display:block}
-.dropdown-item{padding:10px 16px;font-size:13px;cursor:pointer;color:var(--text-muted);transition:all .2s}
-.dropdown-item:hover{background:rgba(0,212,255,.08);color:var(--text)}
-.dropdown-item.danger:hover{color:var(--danger)}
-.content{flex:1;overflow:hidden}
-.page{display:none;height:100%;padding:20px;overflow-y:auto}
-.page.active{display:block}
-.card{background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:20px}
-.card-title{font-size:14px;font-weight:bold;color:var(--accent);margin-bottom:16px;border-left:3px solid var(--accent);padding-left:10px}
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;transition:transform .2s,box-shadow .2s}
-.stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,212,255,.15)}
-.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:8px}
-.stat-value{font-size:24px;font-weight:bold;color:var(--accent)}
-.stat-unit{font-size:12px;color:var(--text-muted);margin-left:3px}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.toast{position:fixed;top:70px;right:20px;padding:10px 18px;border-radius:6px;font-size:13px;z-index:9999;animation:slideIn .3s ease;box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.toast.success{background:var(--success);color:#fff}.toast.error{background:var(--danger);color:#fff}
-.toast.info{background:#1890ff;color:#fff}.toast.warning{background:var(--warning);color:#fff}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-.empty{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px}
-.empty .icon{font-size:36px;margin-bottom:10px}
-.robot-item{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;cursor:pointer;transition:all .2s}
-.robot-item:hover{border-color:var(--accent);background:rgba(0,212,255,.05)}
-.robot-name{font-weight:bold;color:var(--accent);font-size:14px}
-.robot-meta{font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.8}
-.battery-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:8px;overflow:hidden}
-.battery-fill{height:100%;border-radius:3px;transition:width .3s}
-.bat-high{background:var(--success)}.bat-mid{background:var(--warning)}.bat-low{background:var(--danger)}
-.alert-item{background:rgba(255,77,79,.08);border:1px solid rgba(255,77,79,.3);border-radius:6px;padding:10px;margin-bottom:8px;font-size:12px;color:var(--text)}
-.route-input{width:100%;background:var(--bg-dark);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:9px 12px;font-size:13px}
-.route-input:focus{outline:none;border-color:var(--accent)}
-.route-input::placeholder{color:var(--text-muted)}
-.btn{border:none;border-radius:6px;padding:9px 16px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,212,255,.35)}
-.btn-danger{background:linear-gradient(135deg,#ff4d4f,#ff7875);color:#fff}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-muted)}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
-.btn-block{width:100%;margin-top:6px}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
-</style>
+<link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 <div class="layout">
@@ -85,7 +15,6 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
       <div class="nav-item active" data-page="dashboard"><span class="icon">📊</span>数据监控</div>
       <div class="nav-item" data-page="video"><span class="icon">📹</span>视频监控</div>
       <div class="nav-item" data-page="location"><span class="icon">📍</span>位置检测</div>
-      <div class="nav-item" data-page="control"><span class="icon">🎮</span>设备控制</div>
       <div class="nav-item" data-page="indoormap"><span class="icon">🗺️</span>室内建图</div>
     </nav>
   </aside>
@@ -94,15 +23,9 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
       <span class="topbar-title" id="page-title">数据监控</span>
       <div class="topbar-right">
         <div style="display:flex;align-items:center;gap:20px;font-size:13px;color:var(--text-muted)">
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="status-dot"></span><span>系统运行中</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="status-dot" id="mqttDot"></span><span id="mqttStatus">MQTT: 连接中...</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span class="status-dot" id="apiDot"></span><span id="apiStatus">API: 检查中...</span>
-          </div>
+          <div style="display:flex;align-items:center;gap:6px"><span class="status-dot"></span><span>系统运行中</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><span class="status-dot" id="mqttDot"></span><span id="mqttStatus">MQTT: 连接中...</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><span class="status-dot" id="apiDot"></span><span id="apiStatus">API: 检查中...</span></div>
           <span id="clockTime"></span>
         </div>
         <div class="user-menu">
@@ -112,6 +35,7 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
             <span style="font-size:11px;color:var(--text-muted)">▾</span>
           </div>
           <div class="dropdown" id="dropdown">
+            <div class="dropdown-item" id="profileBtn">👤 个人中心</div>
             <div class="dropdown-item danger" id="logoutBtn">退出登录</div>
           </div>
         </div>
@@ -121,9 +45,7 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
 
       <!-- 数据监控 -->
       <div class="page active" id="page-dashboard">
-        <!-- 第一行：运动 + 电源 + 统计 -->
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
-          <!-- 运动数据 -->
           <div class="card">
             <div class="card-title">🛰️ 运动数据</div>
             <div class="stat-grid">
@@ -133,14 +55,12 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
               <div class="stat-card"><div class="stat-label">数据延迟</div><div class="stat-value" id="d-delay">--<span class="stat-unit">秒</span></div></div>
             </div>
           </div>
-          <!-- 电源数据 -->
           <div class="card">
             <div class="card-title">🔋 电源数据</div>
             <div class="stat-grid">
               <div class="stat-card"><div class="stat-label">电量</div><div class="stat-value" id="d-battery">--<span class="stat-unit">%</span></div></div>
               <div class="stat-card"><div class="stat-label">电压</div><div class="stat-value" id="d-voltage">--<span class="stat-unit">V</span></div></div>
             </div>
-            <!-- 电量进度条 -->
             <div style="margin-top:14px">
               <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">电量状态</div>
               <div style="height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden">
@@ -149,7 +69,6 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
             </div>
             <div style="margin-top:12px;font-size:12px;color:var(--text-muted);text-align:right">最后更新: <span id="d-lastUpdate">--</span></div>
           </div>
-          <!-- 统计 + 警报 -->
           <div class="card">
             <div class="card-title">📊 统计数据</div>
             <div class="stat-grid" style="margin-bottom:14px">
@@ -157,15 +76,10 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
               <div class="stat-card"><div class="stat-label">今日警报</div><div class="stat-value" id="d-alerts" style="color:var(--warning)">0</div></div>
             </div>
             <div class="card-title">⚠️ 实时警报</div>
-            <div id="d-alertList" style="max-height:130px;overflow-y:auto">
-              <div class="empty"><div class="icon">✅</div>暂无警报</div>
-            </div>
+            <div id="d-alertList" style="max-height:130px;overflow-y:auto"><div class="empty"><div class="icon">✅</div>暂无警报</div></div>
           </div>
         </div>
-
-        <!-- 第二行：环境数据 + 烟雾检测 -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-          <!-- 温湿度 -->
           <div class="card">
             <div class="card-title">🌡️ 环境数据</div>
             <div class="stat-grid">
@@ -186,32 +100,18 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
               <div class="stat-card"><div class="stat-label">检测人数</div><div class="stat-value" id="d-person">--<span class="stat-unit">人</span></div></div>
             </div>
           </div>
-
-          <!-- 烟雾检测 -->
           <div class="card" id="d-smokeCard">
             <div class="card-title">💨 烟雾检测</div>
             <div style="display:flex;align-items:center;gap:20px;margin-bottom:14px">
-              <div class="stat-card" style="flex:1">
-                <div class="stat-label">烟雾值 (ADC)</div>
-                <div class="stat-value" id="d-smoke">--</div>
-              </div>
-              <div id="d-smokeStatus" style="padding:8px 16px;border-radius:20px;font-size:13px;font-weight:bold;background:rgba(82,196,26,.15);color:var(--success);border:1px solid rgba(82,196,26,.3)">
-                -- 检测中
-              </div>
+              <div class="stat-card" style="flex:1"><div class="stat-label">烟雾值 (ADC)</div><div class="stat-value" id="d-smoke">--</div></div>
+              <div id="d-smokeStatus" style="padding:8px 16px;border-radius:20px;font-size:13px;font-weight:bold;background:rgba(82,196,26,.15);color:var(--success);border:1px solid rgba(82,196,26,.3)">-- 检测中</div>
             </div>
-            <!-- 烟雾进度条 -->
-            <div style="margin-bottom:10px">
-              <div style="height:10px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden">
-                <div id="d-smokeBar" style="height:100%;border-radius:5px;transition:width .5s,background .5s;width:0%"></div>
-              </div>
-            </div>
-            <!-- 刻度说明 -->
+            <div style="margin-bottom:10px"><div style="height:10px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden"><div id="d-smokeBar" style="height:100%;border-radius:5px;transition:width .5s,background .5s;width:0%"></div></div></div>
             <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-bottom:10px">
               <span style="color:var(--success)">● 洁净 50~150</span>
               <span style="color:var(--warning)">● 轻微 200~400</span>
               <span style="color:var(--danger)">● 危险 500+</span>
             </div>
-            <!-- 告警横幅 -->
             <div id="d-smokeAlert" style="display:none;padding:8px 12px;background:rgba(255,77,79,.1);border:1px solid rgba(255,77,79,.4);border-radius:6px;font-size:12px;color:var(--danger)"></div>
           </div>
         </div>
@@ -220,37 +120,21 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
       <!-- 视频监控 -->
       <div class="page" id="page-video">
         <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;height:calc(100vh - 120px)">
-          <!-- 主画面 -->
           <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column">
             <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
               <span style="font-size:14px;font-weight:bold;color:var(--accent)">📹 实时画面</span>
               <div style="display:flex;align-items:center;gap:16px">
-                <div style="display:flex;align-items:center;gap:6px">
-                  <span class="status-dot" id="faceDot" style="background:var(--text-muted);animation:none"></span>
-                  <span id="faceStatus" style="font-size:12px;color:var(--text-muted)">识别: 未启动</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <span class="status-dot" id="camDot" style="background:var(--text-muted);animation:none"></span>
-                  <span id="camStatus" style="font-size:12px;color:var(--text-muted)">未连接</span>
-                </div>
+                <div style="display:flex;align-items:center;gap:6px"><span class="status-dot" id="faceDot" style="background:var(--text-muted);animation:none"></span><span id="faceStatus" style="font-size:12px;color:var(--text-muted)">识别: 未启动</span></div>
+                <div style="display:flex;align-items:center;gap:6px"><span class="status-dot" id="camDot" style="background:var(--text-muted);animation:none"></span><span id="camStatus" style="font-size:12px;color:var(--text-muted)">未连接</span></div>
               </div>
             </div>
-            <!-- 视频+识别叠加层 -->
             <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#0a0e1a;position:relative;overflow:hidden">
               <img id="camImg" style="max-width:100%;max-height:100%;display:none;object-fit:contain">
-              <!-- 人脸识别结果叠加 -->
               <div id="faceOverlay" style="position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none"></div>
-              <div id="camPlaceholder" style="text-align:center;color:var(--text-muted)">
-                <div style="font-size:48px;margin-bottom:12px">📷</div>
-                <div>点击右侧"连接"按钮开始</div>
-              </div>
-              <div id="camError" style="display:none;text-align:center;color:var(--danger)">
-                <div style="font-size:36px;margin-bottom:8px">⚠️</div>
-                <div id="camErrorMsg">连接失败</div>
-              </div>
+              <div id="camPlaceholder" style="text-align:center;color:var(--text-muted)"><div style="font-size:48px;margin-bottom:12px">📷</div><div>点击右侧"连接"按钮开始</div></div>
+              <div id="camError" style="display:none;text-align:center;color:var(--danger)"><div style="font-size:36px;margin-bottom:8px">⚠️</div><div id="camErrorMsg">连接失败</div></div>
             </div>
           </div>
-          <!-- 控制面板 -->
           <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto">
             <div class="card">
               <div class="card-title">⚙️ 画质设置</div>
@@ -264,45 +148,32 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
               </div>
               <div style="margin-bottom:10px">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">画质: <span id="qualityVal">25</span></div>
-                <input type="range" id="qualitySlider" min="10" max="90" value="25" style="width:100%;accent-color:var(--accent)"
-                  oninput="document.getElementById('qualityVal').textContent=this.value">
+                <input type="range" id="qualitySlider" min="10" max="90" value="25" style="width:100%;accent-color:var(--accent)" oninput="document.getElementById('qualityVal').textContent=this.value">
               </div>
               <button class="btn btn-primary btn-block" onclick="connectCamera()" id="camConnBtn">▶ 连接摄像头</button>
               <button class="btn btn-danger btn-block" onclick="disconnectCamera()" id="camDiscBtn" style="display:none">■ 断开</button>
             </div>
             <div class="card">
               <div class="card-title">🤖 人脸识别</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">
-                识别结果实时叠加在画面上<br>绿色=已知人员 黄色=陌生人
-              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">识别结果实时叠加在画面上<br>绿色=已知人员 黄色=陌生人</div>
               <button class="btn btn-primary btn-block" onclick="startFace()" id="faceStartBtn">▶ 启动识别</button>
               <button class="btn btn-danger btn-block" onclick="stopFace()" id="faceStopBtn" style="display:none">■ 停止识别</button>
-              <!-- 识别历史 -->
               <div style="margin-top:12px">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">最近识别记录</div>
-                <div id="faceHistory" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
-                  <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px">暂无记录</div>
-                </div>
+                <div id="faceHistory" style="max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:4px"><div style="font-size:12px;color:var(--text-muted);text-align:center;padding:8px">暂无记录</div></div>
               </div>
             </div>
             <div class="card">
               <div class="card-title">🎓 人脸训练</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">
-                采集30张人脸照片完成训练<br>训练后重启识别即可生效
-              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;line-height:1.8">采集30张人脸照片完成训练<br>训练后重启识别即可生效</div>
               <button class="btn btn-primary btn-block" onclick="showTrainDialog()" id="trainStartBtn">📷 开始训练</button>
               <button class="btn btn-danger btn-block" onclick="stopTrain()" id="trainStopBtn" style="display:none">■ 中止训练</button>
               <div id="trainProgress" style="display:none;margin-top:10px">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px">采集进度: <span id="trainProgressText">0/30</span></div>
-                <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
-                  <div id="trainProgressBar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width .3s"></div>
-                </div>
+                <div style="height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden"><div id="trainProgressBar" style="height:100%;background:var(--accent);border-radius:3px;width:0%;transition:width .3s"></div></div>
               </div>
             </div>
-            <div class="card">
-              <div class="card-title">📸 截图</div>
-              <button class="btn btn-ghost btn-block" onclick="takeSnapshot()">📷 保存当前帧</button>
-            </div>
+            <div class="card"><div class="card-title">📸 截图</div><button class="btn btn-ghost btn-block" onclick="takeSnapshot()">📷 保存当前帧</button></div>
           </div>
         </div>
       </div>
@@ -319,17 +190,11 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
               <div class="card-title">🗺️ 步行路线规划</div>
               <div style="margin-bottom:10px">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">起点</div>
-                <div style="display:flex;gap:6px">
-                  <input type="text" class="route-input" id="loc-start" placeholder="经度,纬度" style="flex:1">
-                  <button class="btn btn-ghost" onclick="useRobotPos('start')">🤖</button>
-                </div>
+                <div style="display:flex;gap:6px"><input type="text" class="route-input" id="loc-start" placeholder="经度,纬度" style="flex:1"><button class="btn btn-ghost" onclick="useRobotPos('start')">🤖</button></div>
               </div>
               <div style="margin-bottom:12px">
                 <div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">终点</div>
-                <div style="display:flex;gap:6px">
-                  <input type="text" class="route-input" id="loc-end" placeholder="经度,纬度" style="flex:1">
-                  <button class="btn btn-ghost" onclick="useRobotPos('end')">🤖</button>
-                </div>
+                <div style="display:flex;gap:6px"><input type="text" class="route-input" id="loc-end" placeholder="经度,纬度" style="flex:1"><button class="btn btn-ghost" onclick="useRobotPos('end')">🤖</button></div>
               </div>
               <button class="btn btn-primary btn-block" id="loc-planBtn" onclick="planRoute()">🚶 规划步行路线</button>
               <button class="btn btn-danger btn-block" onclick="clearRoute()">✕ 清除路线</button>
@@ -348,18 +213,9 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
         </div>
       </div>
 
-      <!-- 设备控制 -->
-      <div class="page" id="page-control">
-        <div class="card" style="height:calc(100vh - 120px);display:flex;align-items:center;justify-content:center">
-          <div class="empty"><div class="icon">🎮</div><div style="font-size:16px;margin-bottom:8px">设备控制</div><div>功能开发中...</div></div>
-        </div>
-      </div>
-
       <!-- 室内建图 -->
       <div class="page" id="page-indoormap">
         <div style="display:flex;flex-direction:column;height:calc(100vh - 120px);gap:0">
-
-          <!-- 顶部工具栏 RViz风格 -->
           <div style="background:#1e2130;border-bottom:1px solid #3a4060;padding:6px 12px;display:flex;align-items:center;gap:6px;flex-shrink:0;flex-wrap:wrap">
             <span style="font-size:13px;font-weight:bold;color:#c8d0e0;margin-right:8px">实时建图 (Web RViz)</span>
             <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizResetView()">🎯 复位</button>
@@ -369,39 +225,26 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
             <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="rvizClearPath()">🗑️ 清轨迹</button>
             <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px" onclick="saveMap()">💾 保存</button>
             <button class="btn btn-ghost" style="padding:3px 10px;font-size:12px;height:26px;color:#ffff00" onclick="window._rvizDebug=!window._rvizDebug;this.style.background=window._rvizDebug?'rgba(255,255,0,0.15)':''">🔍 调试</button>
+            <button class="btn btn-ghost" id="btn3dToggle" style="padding:3px 10px;font-size:12px;height:26px;color:#00d4ff" onclick="rvizToggle3D()">🔵 3D视图</button>
+            <select id="scanFramesSel" style="background:#2d3347;border:1px solid #3a4060;color:#c8d0e0;font-size:12px;height:26px;border-radius:6px;padding:0 6px" onchange="setScanFrames(this.value)" title="点云累积帧数">
+              <option value="1">点云 1帧</option>
+              <option value="3">点云 3帧</option>
+              <option value="5" selected>点云 5帧</option>
+              <option value="10">点云 10帧</option>
+            </select>
             <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
-              <div style="display:flex;align-items:center;gap:5px">
-                <span class="status-dot" id="rvcDot" style="background:var(--text-muted);animation:none"></span>
-                <span id="rvcStatus" style="font-size:12px;color:var(--text-muted)">未连接</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:5px">
-                <span class="status-dot" id="mapDot" style="background:var(--text-muted);animation:none"></span>
-                <span id="mapStatus" style="font-size:12px;color:var(--text-muted)">等待地图</span>
-              </div>
+              <div style="display:flex;align-items:center;gap:5px"><span class="status-dot" id="rvcDot" style="background:var(--text-muted);animation:none"></span><span id="rvcStatus" style="font-size:12px;color:var(--text-muted)">未连接</span></div>
+              <div style="display:flex;align-items:center;gap:5px"><span class="status-dot" id="mapDot" style="background:var(--text-muted);animation:none"></span><span id="mapStatus" style="font-size:12px;color:var(--text-muted)">等待地图</span></div>
             </div>
           </div>
-
-          <!-- 主体：画布 + 右侧面板 -->
           <div style="flex:1;display:grid;grid-template-columns:1fr 200px;overflow:hidden">
-
-            <!-- 地图画布区域 -->
             <div style="position:relative;overflow:hidden;background:#111318;cursor:grab" id="rvizContainer">
               <canvas id="rvizCanvas" style="position:absolute;top:0;left:0"></canvas>
-              <!-- 坐标显示 -->
+              <canvas id="rviz3dCanvas" style="position:absolute;top:0;left:0;display:none"></canvas>
               <div id="rvizCoords" style="position:absolute;bottom:8px;left:10px;font-size:11px;color:rgba(200,208,224,0.6);font-family:monospace;pointer-events:none">x: -- y: --</div>
-              <!-- 比例尺 -->
               <div id="rvizScale" style="position:absolute;bottom:8px;right:10px;font-size:11px;color:rgba(200,208,224,0.6);pointer-events:none"></div>
-              <div id="rvizPlaceholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-muted);pointer-events:none">
-                <div style="font-size:40px;margin-bottom:10px;opacity:0.4">🗺️</div>
-                <div style="font-size:13px">连接 rosbridge 后自动显示</div>
-                <div style="font-size:11px;margin-top:6px;opacity:0.6">roslaunch n10_slam n10_gmapping_web.launch</div>
-              </div>
             </div>
-
-            <!-- 右侧面板 -->
             <div style="background:#1a1f2e;border-left:1px solid #3a4060;display:flex;flex-direction:column;overflow-y:auto">
-
-              <!-- 连接 -->
               <div style="padding:12px;border-bottom:1px solid #2d3347">
                 <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 连接</div>
                 <div style="font-size:11px;color:var(--text-muted);margin-bottom:5px">rosbridge WebSocket</div>
@@ -409,8 +252,6 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
                 <button class="btn btn-primary btn-block" id="rvcConnBtn" onclick="rvizConnect()" style="font-size:12px;padding:6px">▶ 连接</button>
                 <button class="btn btn-danger btn-block" id="rvcDiscBtn" style="display:none;margin-top:5px;font-size:12px;padding:6px" onclick="rvizDisconnect()">■ 断开</button>
               </div>
-
-              <!-- 地图信息 -->
               <div style="padding:12px;border-bottom:1px solid #2d3347">
                 <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 地图信息</div>
                 <div style="font-size:11px;line-height:2;color:var(--text-muted)">
@@ -423,8 +264,6 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
                   <div>雷达点 <span id="scan-count" style="color:#c8d0e0;float:right">--</span></div>
                 </div>
               </div>
-
-              <!-- 图例 -->
               <div style="padding:12px">
                 <div style="font-size:11px;font-weight:bold;color:#00d4ff;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">■ 图例</div>
                 <div style="font-size:11px;line-height:2.4;color:var(--text-muted)">
@@ -441,624 +280,167 @@ body{background:var(--bg-dark);color:var(--text);height:100vh;overflow:hidden}
         </div>
       </div>
 
+      <!-- 个人中心 -->
+      <div class="page" id="page-profile">
+        <div class="profile-layout">
+          <!-- 左列：头像卡片 + 安全设置 -->
+          <div class="profile-left">
+            <!-- 头像卡片 -->
+            <div class="card profile-hero-card">
+              <div class="profile-avatar-wrap">
+                <div class="profile-avatar-ring" id="avatarRing" onclick="triggerAvatarUpload()" title="点击更换头像">
+                  <div id="profile-avatar-big" class="profile-avatar-big">U</div>
+                  <div class="avatar-upload-mask">📷</div>
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="onAvatarFileChange(this)">
+                <div class="profile-avatar-colors" id="avatarColors"></div>
+                <button id="avatarRemoveBtn" class="avatar-remove-btn" onclick="removeAvatar()" style="display:none" title="移除自定义头像">✕ 移除图片</button>
+              </div>
+              <div id="profile-nickname" class="profile-hero-name">--</div>
+              <div id="profile-username-show" class="profile-hero-sub">@--</div>
+              <div id="profile-role-badge" class="profile-role-badge">普通用户</div>
+              <button class="btn btn-primary profile-edit-btn" onclick="openEditModal()">✏️ 编辑资料</button>
+            </div>
+            <!-- 安全设置 -->
+            <div class="card">
+              <div class="card-title">🔒 账号安全</div>
+              <div class="profile-security-list">
+                <div class="profile-security-item">
+                  <div class="profile-security-icon" style="background:rgba(0,212,255,.12);color:var(--accent)">🔑</div>
+                  <div class="profile-security-info">
+                    <div class="profile-security-label">登录密码</div>
+                    <div class="profile-security-desc">定期修改密码保障账号安全</div>
+                  </div>
+                  <button class="btn btn-ghost profile-security-btn" onclick="openPwdModal()">修改</button>
+                </div>
+                <div class="profile-security-item">
+                  <div class="profile-security-icon" style="background:rgba(255,77,79,.12);color:var(--danger)">🚪</div>
+                  <div class="profile-security-info">
+                    <div class="profile-security-label">退出登录</div>
+                    <div class="profile-security-desc">安全退出当前账号</div>
+                  </div>
+                  <button class="btn btn-danger profile-security-btn" onclick="doLogout()">退出</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右列：账号信息 + 活动统计 + 登录记录 -->
+          <div class="profile-right">
+            <!-- 账号信息 -->
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title">📋 账号信息</div>
+              <div class="profile-info-grid">
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">👤</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">用户名</div>
+                    <div class="profile-info-value" id="pi-username">--</div>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">✨</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">昵称</div>
+                    <div class="profile-info-value" id="pi-nickname">--</div>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">📱</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">手机号</div>
+                    <div class="profile-info-value" id="pi-phone">--</div>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">📧</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">邮箱</div>
+                    <div class="profile-info-value" id="pi-email">--</div>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">🏷️</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">角色</div>
+                    <div class="profile-info-value" id="pi-role" style="color:var(--accent)">--</div>
+                  </div>
+                </div>
+                <div class="profile-info-item">
+                  <div class="profile-info-icon">📅</div>
+                  <div class="profile-info-body">
+                    <div class="profile-info-label">注册时间</div>
+                    <div class="profile-info-value" id="pi-createTime">--</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 使用统计 -->
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-title">📊 使用统计</div>
+              <div class="profile-stats-row">
+                <div class="profile-stat-box">
+                  <div class="profile-stat-num" id="stat-sessions">--</div>
+                  <div class="profile-stat-desc">今日登录</div>
+                </div>
+                <div class="profile-stat-box">
+                  <div class="profile-stat-num" id="stat-online">--</div>
+                  <div class="profile-stat-desc">在线时长(分)</div>
+                </div>
+                <div class="profile-stat-box">
+                  <div class="profile-stat-num" id="stat-robots">--</div>
+                  <div class="profile-stat-desc">监控机器人</div>
+                </div>
+                <div class="profile-stat-box">
+                  <div class="profile-stat-num" id="stat-alerts">0</div>
+                  <div class="profile-stat-desc">今日警报</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 最近登录记录 -->
+            <div class="card">
+              <div class="card-title">🕐 最近登录</div>
+              <div id="login-history-list" class="profile-login-list">
+                <div class="empty" style="padding:20px"><div class="icon">📋</div>暂无记录</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
+<!-- 编辑资料弹窗 -->
+<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:28px;width:360px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
+    <div style="font-size:15px;font-weight:bold;color:var(--accent);margin-bottom:18px">✏️ 编辑资料</div>
+    <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">昵称</div><input id="edit-nickname" type="text" class="route-input" placeholder="昵称" style="width:100%" maxlength="100"></div>
+    <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">手机号</div><input id="edit-phone" type="tel" class="route-input" placeholder="手机号" style="width:100%" maxlength="11"></div>
+    <div style="margin-bottom:18px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">邮箱</div><input id="edit-email" type="email" class="route-input" placeholder="邮箱" style="width:100%" maxlength="100"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveProfile()">保存</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeEditModal()">取消</button>
+    </div>
+  </div>
+</div>
 
-<script>
-// ── 状态 ──────────────────────────────────────────────────
-const BASE = window.location.protocol + '//' + window.location.hostname + ':8080/api';
-// Jetson IP：从后端配置获取，也可手动覆盖 localStorage.setItem('jetson_ip','x.x.x.x')
-let JETSON_IP = localStorage.getItem('jetson_ip') || window.location.hostname;
-let CAM_STREAM = window.location.protocol + '//' + JETSON_IP + ':8081/stream?topic=/image';
+<!-- 修改密码弹窗 -->
+<div id="pwdModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center">
+  <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:28px;width:360px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
+    <div style="font-size:15px;font-weight:bold;color:var(--accent);margin-bottom:18px">🔒 修改密码</div>
+    <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">当前密码</div><input id="pwd-old" type="password" class="route-input" placeholder="当前密码" style="width:100%"></div>
+    <div style="margin-bottom:12px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">新密码（至少6位）</div><input id="pwd-new" type="password" class="route-input" placeholder="新密码" style="width:100%"></div>
+    <div style="margin-bottom:18px"><div style="font-size:12px;color:var(--text-muted);margin-bottom:5px">确认新密码</div><input id="pwd-new2" type="password" class="route-input" placeholder="确认新密码" style="width:100%"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="savePassword()">确认修改</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closePwdModal()">取消</button>
+    </div>
+  </div>
+</div>
 
-// 启动时从后端拉取 Jetson IP 列表，自动匹配当前网络
-fetch(BASE + '/config/jetson-ip').then(r => r.json()).then(d => {
-  if (d.ips && d.ips.length > 0) {
-    // 优先用与当前访问 hostname 相同的 IP，否则取第一个
-    const matched = d.ips.find(ip => ip === window.location.hostname);
-    JETSON_IP = matched || d.ips[0];
-    CAM_STREAM = window.location.protocol + '//' + JETSON_IP + ':8081/stream?topic=/image';
-  }
-}).catch(() => {});
-let robotData = {};
-let mapObj = null, mapReady = false, mapDark = false;
-let routeMarkers = [], routePolylines = [], currentDest = null;
-
-// ── 导航 ──────────────────────────────────────────────────
-const pageTitles = {dashboard:'数据监控',video:'视频监控',location:'位置检测',control:'设备控制',indoormap:'室内建图'};
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('page-' + item.dataset.page).classList.add('active');
-    document.getElementById('page-title').textContent = pageTitles[item.dataset.page];
-    if (item.dataset.page === 'location' && !mapReady) initMap();
-    if (item.dataset.page === 'indoormap') initMapSSE();
-  });
-});
-
-// ── 用户菜单 ──────────────────────────────────────────────
-const uname = localStorage.getItem('currentUsername') || '用户';
-document.getElementById('username').textContent = uname;
-document.getElementById('avatar').textContent = uname.charAt(0).toUpperCase();
-document.getElementById('userBtn').addEventListener('click', e => {
-  e.stopPropagation();
-  document.getElementById('dropdown').classList.toggle('show');
-});
-document.addEventListener('click', () => document.getElementById('dropdown').classList.remove('show'));
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  try { await fetch(BASE + '/auth/logout', {method:'POST'}); } catch(_) {}
-  localStorage.clear();
-  location.href = '/login.html';
-});
-
-// ── Toast ─────────────────────────────────────────────────
-function toast(msg, type='info') {
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.textContent = msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-// ── 工具 ──────────────────────────────────────────────────
-function parseCoords(str) {
-  const p = str.split(',').map(s => parseFloat(s.trim()));
-  return (p.length===2 && !isNaN(p[0]) && !isNaN(p[1])) ? {lng:p[0],lat:p[1]} : null;
-}
-function timeSince(ts) {
-  if (!ts) return '';
-  const sec = Math.floor((Date.now() - (ts < 1e12 ? ts*1000 : ts)) / 1000);
-  if (sec < 10) return '刚刚';
-  if (sec < 60) return sec + '秒前';
-  if (sec < 3600) return Math.floor(sec/60) + '分钟前';
-  return Math.floor(sec/3600) + '小时前';
-}
-function fmtTime(ts) {
-  if (!ts) return '--';
-  return new Date(ts < 1e12 ? ts*1000 : ts).toLocaleTimeString();
-}
-</script>
-
-<script>
-// ── 数据获取 ──────────────────────────────────────────────
-async function fetchData() {
-  try {
-    const res = await fetch(BASE + '/robot-data', {headers:{'Cache-Control':'no-cache'}});
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-    data.sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
-    const map = {};
-    data.forEach(d => {
-      const id = d.deviceId||'robot';
-      if (!map[id] || d.timestamp > map[id].timestamp) map[id] = d;
-    });
-    robotData = map;
-    const robots = Object.values(map);
-    updateDashboard(robots);
-    updateLocation(robots);
-    setStatus(true);
-  } catch(e) {
-    setStatus(false);
-  }
-}
-
-function setStatus(ok) {
-  const color = ok ? 'var(--success)' : 'var(--danger)';
-  const apiDot = document.getElementById('apiDot');
-  const mqttDot = document.getElementById('mqttDot');
-  if (apiDot) apiDot.style.background = color;
-  if (mqttDot) mqttDot.style.background = ok ? 'var(--success)' : 'var(--warning)';
-  document.getElementById('apiStatus').textContent  = ok ? 'API: 已连接'   : 'API: 连接失败';
-  document.getElementById('mqttStatus').textContent = ok ? 'MQTT: 实时数据' : 'MQTT: 无数据';
-}
-
-// 时钟
-function updateClock() {
-  const el = document.getElementById('clockTime');
-  if (el) el.textContent = new Date().toLocaleTimeString();
-}
-updateClock();
-setInterval(updateClock, 1000);
-
-// ── 数据监控 ──────────────────────────────────────────────
-function updateDashboard(robots) {
-  if (!robots.length) return;
-  const r = robots[0];
-  const ts = r.timestamp < 1e12 ? r.timestamp*1000 : r.timestamp;
-  const delay = Math.floor((Date.now()-ts)/1000);
-
-  // 运动数据
-  document.getElementById('d-satellites').innerHTML = (r.satellites||0)+'<span class="stat-unit">颗</span>';
-  document.getElementById('d-speed').innerHTML      = (r.speed||0).toFixed(1)+'<span class="stat-unit">km/h</span>';
-  document.getElementById('d-altitude').innerHTML   = (r.altitude||0).toFixed(1)+'<span class="stat-unit">m</span>';
-  document.getElementById('d-delay').innerHTML      = delay+'<span class="stat-unit">秒</span>';
-
-  // 电源数据
-  const bat = r.batteryLevel||0;
-  document.getElementById('d-battery').innerHTML = bat+'<span class="stat-unit">%</span>';
-  document.getElementById('d-voltage').innerHTML = (r.voltage||0).toFixed(2)+'<span class="stat-unit">V</span>';
-  const batColor = bat>70?'var(--success)':bat>30?'var(--warning)':'var(--danger)';
-  document.getElementById('d-batteryBar').style.cssText = `height:100%;border-radius:4px;transition:width .5s,background .5s;width:${bat}%;background:${batColor}`;
-
-  document.getElementById('d-online').textContent   = robots.length;
-  document.getElementById('d-lastUpdate').textContent = new Date().toLocaleTimeString();
-
-  // 温湿度
-  const temp = r.temperature;
-  const humi = r.humidity;
-  document.getElementById('d-temperature').innerHTML = temp!=null ? temp.toFixed(1)+'<span class="stat-unit">℃</span>' : '--<span class="stat-unit">℃</span>';
-  document.getElementById('d-humidity').innerHTML    = humi!=null ? humi.toFixed(1)+'<span class="stat-unit">%</span>' : '--<span class="stat-unit">%</span>';
-  document.getElementById('d-person').innerHTML      = (r.personCount!=null ? r.personCount : '--')+'<span class="stat-unit">人</span>';
-  // 温度进度条 (0~50℃ 映射)
-  if (temp!=null) document.getElementById('d-tempBar').style.width = Math.min(100, Math.max(0, temp/50*100))+'%';
-  // 湿度进度条
-  if (humi!=null) document.getElementById('d-humiBar').style.width = Math.min(100, humi)+'%';
-
-  // 烟雾
-  const smoke = r.smokeValue;
-  const smokeEl    = document.getElementById('d-smoke');
-  const smokeBar   = document.getElementById('d-smokeBar');
-  const smokeStatus = document.getElementById('d-smokeStatus');
-  const smokeAlert  = document.getElementById('d-smokeAlert');
-  if (smoke != null) {
-    smokeEl.textContent = smoke;
-    const pct = Math.min(100, smoke/800*100);
-    let color, label, bg, border;
-    if (smoke >= 500) {
-      color='var(--danger)'; label='⚠️ 明显烟雾/明火';
-      bg='rgba(255,77,79,.15)'; border='rgba(255,77,79,.4)';
-    } else if (smoke >= 200) {
-      color='var(--warning)'; label='⚠️ 轻微烟雾';
-      bg='rgba(250,173,20,.15)'; border='rgba(250,173,20,.4)';
-    } else {
-      color='var(--success)'; label='✅ 洁净空气';
-      bg='rgba(82,196,26,.15)'; border='rgba(82,196,26,.3)';
-    }
-    smokeBar.style.cssText = `height:100%;border-radius:5px;transition:width .5s,background .5s;width:${pct}%;background:${color}`;
-    smokeStatus.style.cssText = `padding:8px 16px;border-radius:20px;font-size:13px;font-weight:bold;background:${bg};color:${color};border:1px solid ${border}`;
-    smokeStatus.textContent = label;
-    if (smoke >= 200 && r.alertMessage) {
-      smokeAlert.style.display = 'block';
-      smokeAlert.textContent = r.alertMessage;
-    } else {
-      smokeAlert.style.display = 'none';
-    }
-  } else {
-    smokeEl.textContent = '--';
-    smokeAlert.style.display = 'none';
-  }
-
-  // 警报列表
-  const alerts = robots.filter(x => x.alertMessage?.trim());
-  document.getElementById('d-alerts').textContent = alerts.length;
-  const al = document.getElementById('d-alertList');
-  al.innerHTML = alerts.length ? alerts.map(x=>`
-    <div class="alert-item"><b>${x.deviceId}</b>: ${x.alertMessage}
-    <div style="color:var(--text-muted);margin-top:3px">${fmtTime(x.timestamp)}</div></div>`).join('')
-    : '<div class="empty"><div class="icon">✅</div>暂无警报</div>';
-}
-
-// ── 位置检测 ──────────────────────────────────────────────
-function updateLocation(robots) {
-  if (mapReady) updateMapMarkers(robots);
-  const list = document.getElementById('loc-robotList');
-  if (!list) return;
-  if (!robots.length) { list.innerHTML='<div class="empty"><div class="icon">📡</div>等待数据...</div>'; return; }
-  list.innerHTML = robots.map(r => {
-    const bat = r.batteryLevel||0;
-    const cls = bat>70?'bat-high':bat>30?'bat-mid':'bat-low';
-    return `<div class="robot-item" onclick="focusRobot(${r.longitude},${r.latitude})">
-      <div style="display:flex;justify-content:space-between">
-        <span class="robot-name">${r.deviceId||'robot'}</span>
-        <span style="font-size:12px;color:${bat>30?'var(--success)':'var(--danger)'}">${bat}%</span>
-      </div>
-      <div class="robot-meta">📍 ${(r.longitude||0).toFixed(5)}, ${(r.latitude||0).toFixed(5)}<br>
-        🚀 ${(r.speed||0).toFixed(1)} km/h &nbsp; ⏰ ${timeSince(r.timestamp)}</div>
-      <div class="battery-bar"><div class="battery-fill ${cls}" style="width:${bat}%"></div></div>
-    </div>`;
-  }).join('');
-}
-
-function focusRobot(lng, lat) {
-  if (mapObj) { mapObj.setCenter([lng, lat]); mapObj.setZoom(18); }
-  document.getElementById('loc-start').value = lng.toFixed(6)+','+lat.toFixed(6);
-}
-
-function useRobotPos(field) {
-  const robots = Object.values(robotData);
-  if (!robots.length) { toast('暂无机器人数据','warning'); return; }
-  const r = robots[0];
-  document.getElementById('loc-'+field).value = r.longitude.toFixed(6)+','+r.latitude.toFixed(6);
-}
-</script>
-
-<script>
-// ── 地图 ──────────────────────────────────────────────────
-
-function initMap() {
-  if (typeof AMap === 'undefined' || mapReady) return;
-  mapObj = new AMap.Map('map', {
-    zoom: 16,
-    center: [118.93069167, 32.1230155],
-    mapStyle: 'amap://styles/normal'
-  });
-  mapObj.on('complete', () => {
-    mapReady = true;
-    updateMapMarkers(Object.values(robotData));
-  });
-}
-
-let mapMarkers = [];
-function updateMapMarkers(robots) {
-  mapMarkers.forEach(m => mapObj.remove(m));
-  mapMarkers = [];
-  robots.forEach(r => {
-    if (!r.longitude || !r.latitude) return;
-    // 数据库存的已经是 GCJ02（gps_publisher.py 已转换），直接用
-    const bat = r.batteryLevel || 0;
-    const color = bat<20 ? '#ff4d4f' : bat<50 ? '#faad14' : '#00d4ff';
-    const m = new AMap.Marker({
-      position: [r.longitude, r.latitude],
-      content: `<div style="background:linear-gradient(135deg,${color},#4facfe);border:3px solid #fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,212,255,.5);font-size:16px">🤖</div>`,
-      offset: new AMap.Pixel(-18, -18)
-    });
-    const info = new AMap.InfoWindow({
-      content: `<div style="color:#333;padding:10px;min-width:190px;font-family:'Microsoft YaHei'">
-        <b style="color:#1890ff">${r.deviceId||'robot'}</b><hr style="margin:6px 0">
-        <div>📍 ${r.longitude.toFixed(6)}, ${r.latitude.toFixed(6)}</div>
-        <div> ${bat}% &nbsp; ⚡ ${(r.voltage||0).toFixed(2)}V</div>
-        <div>🚀 ${(r.speed||0).toFixed(1)} km/h &nbsp; 📡 ${r.satellites||0}颗</div>
-      </div>`,
-      offset: new AMap.Pixel(0, -30)
-    });
-    m.on('click', () => info.open(mapObj, m.getPosition()));
-    mapObj.add(m);
-    mapMarkers.push(m);
-  });
-}
-
-function mapFitAll() {
-  if (mapMarkers.length) mapObj.setFitView(mapMarkers);
-}
-
-function mapToggleStyle() {
-  mapDark = !mapDark;
-  mapObj?.setMapStyle('amap://styles/'+(mapDark?'dark':'normal'));
-}
-
-// ── 路线规划 ──────────────────────────────────────────────
-async function planRoute() {
-  const s = parseCoords(document.getElementById('loc-start').value);
-  const e = parseCoords(document.getElementById('loc-end').value);
-  if (!s) { toast('请输入起点坐标','error'); return; }
-  if (!e) { toast('请输入终点坐标','error'); return; }
-  const btn = document.getElementById('loc-planBtn');
-  btn.disabled = true; btn.textContent = '规划中...';
-  try {
-    const url = `https://restapi.amap.com/v3/direction/walking?origin=${s.lng},${s.lat}&destination=${e.lng},${e.lat}&key=c216de193661bf95f9891763d1837c8f`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.status!=='1'||!data.route?.paths?.length) throw new Error(data.info||'规划失败');
-    const path = data.route.paths[0];
-    clearRoute();
-    const pts = [];
-    path.steps.forEach(step => step.polyline.split(';').forEach(p => {
-      const [lng,lat] = p.split(',').map(Number);
-      if (!isNaN(lng)) pts.push([lng,lat]);
-    }));
-    const poly = new AMap.Polyline({path:pts,strokeColor:'#00d4ff',strokeWeight:5,strokeOpacity:.9,lineJoin:'round'});
-    mapObj.add(poly); routePolylines.push(poly);
-    [[s.lng,s.lat,'起','#52c41a'],[e.lng,e.lat,'终','#ff4d4f']].forEach(([lng,lat,label,color]) => {
-      const m = new AMap.Marker({position:[lng,lat],
-        content:`<div style="background:${color};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)">${label}</div>`,
-        offset:new AMap.Pixel(-14,-14)});
-      mapObj.add(m); routeMarkers.push(m);
-    });
-    mapObj.setFitView([...routeMarkers, poly]);
-    const dist = (path.distance/1000).toFixed(2);
-    const mins = Math.ceil(path.duration/60);
-    const ri = document.getElementById('routeInfo');
-    ri.style.display='block';
-    ri.innerHTML = `距离: <b style="color:var(--accent)">${dist}公里</b> &nbsp;|&nbsp; 步行约 <b style="color:var(--accent)">${mins}分钟</b>`;
-    currentDest = {longitude:e.lng, latitude:e.lat, name:`${e.lng},${e.lat}`};
-    const di = document.getElementById('destInfo');
-    di.style.display='block';
-    di.textContent = `目的地: ${e.lng.toFixed(6)}, ${e.lat.toFixed(6)}`;
-    document.getElementById('loc-sendBtn').disabled = false;
-    toast(`规划完成：${dist}公里，约${mins}分钟`,'success');
-  } catch(err) {
-    toast('路线规划失败: '+err.message,'error');
-  } finally {
-    btn.disabled=false; btn.textContent='🚶 规划步行路线';
-  }
-}
-
-function clearRoute() {
-  routeMarkers.forEach(m => mapObj?.remove(m));
-  routePolylines.forEach(p => mapObj?.remove(p));
-  routeMarkers=[]; routePolylines=[]; currentDest=null;
-  document.getElementById('routeInfo').style.display='none';
-  document.getElementById('destInfo').style.display='none';
-  document.getElementById('loc-sendBtn').disabled=true;
-  document.getElementById('loc-start').value='';
-  document.getElementById('loc-end').value='';
-}
-
-async function sendDest() {
-  if (!currentDest) { toast('请先规划路线','warning'); return; }
-  const btn = document.getElementById('loc-sendBtn');
-  btn.disabled=true; btn.textContent='发送中...';
-  try {
-    const res = await fetch(BASE+'/destination/set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'destination',...currentDest})});
-    if (!res.ok) throw new Error(res.status);
-    toast('目的地已发送到机器人','success');
-  } catch(e) {
-    toast('发送失败: '+e.message,'error');
-  } finally {
-    btn.disabled=false; btn.textContent='📤 发送目的地到机器人';
-  }
-}
-
-// ── 摄像头 ────────────────────────────────────────────────
-let camQuality = 25, camWidth = 320, camHeight = 240;
-
-function setQuality(q, w, h) {
-  camQuality=q; camWidth=w; camHeight=h;
-  document.getElementById('qualitySlider').value = q;
-  document.getElementById('qualityVal').textContent = q;
-  ['low','mid','high'].forEach(k => document.getElementById('q-'+k).classList.remove('btn-primary'));
-  if (q===25) document.getElementById('q-low').classList.add('btn-primary');
-  else if (q===50) document.getElementById('q-mid').classList.add('btn-primary');
-  else document.getElementById('q-high').classList.add('btn-primary');
-  if (document.getElementById('camImg').style.display !== 'none') connectCamera();
-}
-
-function connectCamera() {
-  const img = document.getElementById('camImg');
-  const dot = document.getElementById('camDot');
-  document.getElementById('camPlaceholder').style.display = 'none';
-  document.getElementById('camError').style.display = 'none';
-  dot.style.background = 'var(--warning)';
-  dot.style.animation = 'pulse 2s infinite';
-  document.getElementById('camStatus').textContent = '连接中...';
-
-  img.onerror = () => {
-    img.style.display = 'none';
-    document.getElementById('camError').style.display = 'block';
-    document.getElementById('camErrorMsg').textContent = '无法连接，请确认 Jetson 已启动 web_video_server';
-    dot.style.background = 'var(--danger)';
-    dot.style.animation = 'none';
-    document.getElementById('camStatus').textContent = '连接失败';
-    document.getElementById('camConnBtn').style.display = 'block';
-    document.getElementById('camDiscBtn').style.display = 'none';
-  };
-
-  // MJPEG流不触发onload，用定时检测宽度判断是否有画面
-  img.onload = null;
-  img.src = CAM_STREAM + '&width=' + camWidth + '&height=' + camHeight + '&quality=' + document.getElementById('qualitySlider').value;
-  img.style.display = 'block';
-  document.getElementById('camConnBtn').style.display = 'none';
-  document.getElementById('camDiscBtn').style.display = 'block';
-
-  // 3秒后检测是否有画面
-  setTimeout(() => {
-    if (img.naturalWidth > 0) {
-      dot.style.background = 'var(--success)';
-      dot.style.animation = 'none';
-      document.getElementById('camStatus').textContent = '直播中';
-    } else if (document.getElementById('camStatus').textContent === '连接中...') {
-      // 还没报错也没画面，继续等
-      dot.style.background = 'var(--warning)';
-    }
-  }, 3000);
-}
-
-function disconnectCamera() {
-  const img = document.getElementById('camImg');
-  img.src = ''; img.style.display = 'none';
-  document.getElementById('camPlaceholder').style.display = 'block';
-  document.getElementById('camDot').style.background = 'var(--text-muted)';
-  document.getElementById('camDot').style.animation = 'none';
-  document.getElementById('camStatus').textContent = '未连接';
-  document.getElementById('camConnBtn').style.display = 'block';
-  document.getElementById('camDiscBtn').style.display = 'none';
-}
-
-function takeSnapshot() {
-  const img = document.getElementById('camImg');
-  if (!img.src || img.style.display==='none') { toast('请先连接摄像头','warning'); return; }
-  const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth || camWidth;
-  canvas.height = img.naturalHeight || camHeight;
-  canvas.getContext('2d').drawImage(img, 0, 0);
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/jpeg');
-  a.download = 'snapshot_' + new Date().toISOString().slice(0,19).replace(/:/g,'-') + '.jpg';
-  a.click();
-  toast('截图已保存','success');
-}
-
-// ── 人脸识别 & 训练 SSE ───────────────────────────────────
-let faceSSE = null;
-const faceHistoryList = [];
-const MAX_HISTORY = 20;
-let faceOverlayTimer = null;
-
-// 启动 SSE 监听（识别结果 + 训练进度共用同一条流）
-function initFaceSSE() {
-  if (faceSSE) return;
-  faceSSE = new EventSource(BASE + '/face/events');
-
-  faceSSE.addEventListener('connected', () => {
-    console.log('face SSE connected');
-  });
-
-  faceSSE.addEventListener('face', e => {
-    try {
-      const d = JSON.parse(e.data);
-      if (d.type === 'face') {
-        showFaceOverlay(d);
-        addFaceHistory(d);
-      } else if (d.type === 'train') {
-        handleTrainEvent(d);
-      } else if (d.type === 'node_status') {
-        updateFaceNodeStatus(d.status);
-      }
-    } catch(_) {}
-  });
-
-  faceSSE.onerror = () => {
-    document.getElementById('faceDot').style.background = 'var(--danger)';
-    document.getElementById('faceStatus').textContent = '识别: 连接断开';
-  };
-}
-
-// ── 识别控制 ──────────────────────────────────────────────
-async function startFace() {
-  initFaceSSE();
-  const res = await fetch(BASE + '/face/start', {method:'POST'});
-  const d = await res.json();
-  if (d.success) {
-    document.getElementById('faceStartBtn').style.display = 'none';
-    document.getElementById('faceStopBtn').style.display  = 'block';
-    document.getElementById('faceDot').style.background   = 'var(--warning)';
-    document.getElementById('faceDot').style.animation    = 'pulse 2s infinite';
-    document.getElementById('faceStatus').textContent     = '识别: 启动中...';
-    toast('人脸识别已启动', 'success');
-  } else {
-    toast(d.message, 'error');
-  }
-}
-
-async function stopFace() {
-  const res = await fetch(BASE + '/face/stop', {method:'POST'});
-  const d = await res.json();
-  document.getElementById('faceStartBtn').style.display = 'block';
-  document.getElementById('faceStopBtn').style.display  = 'none';
-  document.getElementById('faceDot').style.background   = 'var(--text-muted)';
-  document.getElementById('faceDot').style.animation    = 'none';
-  document.getElementById('faceStatus').textContent     = '识别: 已停止';
-  document.getElementById('faceOverlay').innerHTML      = '';
-  toast('识别已停止', 'info');
-}
-
-function updateFaceNodeStatus(status) {
-  const dot = document.getElementById('faceDot');
-  if (status === 'running') {
-    dot.style.background = 'var(--success)';
-    dot.style.animation  = 'pulse 2s infinite';
-    document.getElementById('faceStatus').textContent = '识别: 运行中';
-  } else if (status === 'stopped') {
-    dot.style.background = 'var(--text-muted)';
-    dot.style.animation  = 'none';
-    document.getElementById('faceStatus').textContent = '识别: 已停止';
-  }
-}
-
-function showFaceOverlay(d) {
-  const overlay = document.getElementById('faceOverlay');
-  const color = d.known ? 'var(--success)' : 'var(--warning)';
-  const icon  = d.known ? '✅' : '❓';
-  overlay.innerHTML = `
-    <div style="background:rgba(0,0,0,.75);border:1px solid ${color};border-radius:6px;padding:8px 14px;font-size:13px;color:${color};backdrop-filter:blur(4px)">
-      ${icon} <b>${d.name}</b>
-      <span style="color:var(--text-muted);font-size:11px;margin-left:8px">${d.confidence.toFixed(1)}%</span>
-    </div>`;
-  clearTimeout(faceOverlayTimer);
-  faceOverlayTimer = setTimeout(() => { overlay.innerHTML = ''; }, 3000);
-}
-
-function addFaceHistory(d) {
-  faceHistoryList.unshift(d);
-  if (faceHistoryList.length > MAX_HISTORY) faceHistoryList.pop();
-  const el = document.getElementById('faceHistory');
-  el.innerHTML = faceHistoryList.map(r => {
-    const color = r.known ? 'var(--success)' : 'var(--warning)';
-    const time  = new Date(r.timestamp).toLocaleTimeString();
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--bg-dark);border-radius:4px;font-size:12px">
-      <span style="color:${color}">${r.known?'✅':'❓'} ${r.name}</span>
-      <span style="color:var(--text-muted)">${r.confidence.toFixed(1)}% · ${time}</span>
-    </div>`;
-  }).join('');
-}
-
-// ── 训练控制 ──────────────────────────────────────────────
-function showTrainDialog() {
-  const modal = document.getElementById('trainModal');
-  modal.style.display = 'flex';
-  document.getElementById('trainNameInput').value = '';
-  setTimeout(() => document.getElementById('trainNameInput').focus(), 100);
-}
-
-function closeTrainModal() {
-  document.getElementById('trainModal').style.display = 'none';
-}
-
-async function confirmTrain() {
-  const name = document.getElementById('trainNameInput').value.trim();
-  if (!name) { toast('请输入姓名', 'warning'); return; }
-  closeTrainModal();
-  initFaceSSE();
-  const res = await fetch(BASE + '/face/train/start', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name})
-  });
-  const d = await res.json();
-  if (d.success) {
-    document.getElementById('trainStartBtn').style.display = 'none';
-    document.getElementById('trainStopBtn').style.display  = 'block';
-    document.getElementById('trainProgress').style.display = 'block';
-    document.getElementById('trainProgressText').textContent = '0/30';
-    document.getElementById('trainProgressBar').style.width = '0%';
-    toast('开始采集 ' + name + ' 的人脸', 'success');
-  } else {
-    toast(d.message, 'error');
-  }
-}
-
-async function stopTrain() {
-  await fetch(BASE + '/face/train/stop', {method:'POST'});
-  resetTrainUI();
-  toast('训练已中止', 'info');
-}
-
-function resetTrainUI() {
-  document.getElementById('trainStartBtn').style.display = 'block';
-  document.getElementById('trainStopBtn').style.display  = 'none';
-  document.getElementById('trainProgress').style.display = 'none';
-}
-
-function handleTrainEvent(d) {
-  if (d.status === 'progress') {
-    const parts = (d.detail || '0/30').split('/');
-    const cur   = parseInt(parts[0]) || 0;
-    const total = parseInt(parts[1]) || 30;
-    const pct   = Math.round(cur / total * 100);
-    document.getElementById('trainProgressText').textContent = d.detail;
-    document.getElementById('trainProgressBar').style.width  = pct + '%';
-  } else if (d.status === 'done') {
-    resetTrainUI();
-    toast('✅ ' + d.name + ' 训练完成！', 'success');
-  } else if (d.status === 'error') {
-    resetTrainUI();
-    toast('训练出错: ' + d.detail, 'error');
-  }
-}
-
-// 键盘回车确认训练
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('trainModal').style.display === 'flex') {
-    confirmTrain();
-  }
-  if (e.key === 'Escape') closeTrainModal();
-});
-</script>
-
-<!-- 训练姓名输入弹窗 -->
 <div id="trainModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:center;justify-content:center">
   <div style="background:var(--bg-panel);border:1px solid var(--border);border-radius:12px;padding:28px;width:320px;box-shadow:0 16px 48px rgba(0,0,0,.5)">
     <div style="font-size:15px;font-weight:bold;color:var(--accent);margin-bottom:16px">🎓 输入训练人员姓名</div>
@@ -1070,504 +452,11 @@ document.addEventListener('keydown', e => {
   </div>
 </div>
 
-<script>
-// ── 室内建图 Web RViz ─────────────────────────────────────
-let rvizWS = null;
-
-// 地图数据
-let rvizMap = null; // {width,height,res,origin_x,origin_y,data}
-let rvizMapDirty = false;
-
-// 视图变换
-let rvizView = { x: 0, y: 0, scale: 50 }; // scale: px/m
-let rvizDrag = null;
-
-// 小车位姿
-let robotPose = { x: 0, y: 0, yaw: 0 };
-let hasPose = false;
-
-// 轨迹
-let robotPath = [];
-const MAX_PATH = 3000;
-
-// 雷达（世界坐标）
-let scanPoints = [];
-
-// 显示开关
-let showScan = true, showPath = true, showGrid = true;
-
-// 地图离屏缓存
-let rvizMapCache = null;
-
-// 初始化 rosbridge URL
-function rvizInitUrl() {
-  const ip = JETSON_IP || window.location.hostname;
-  document.getElementById('rvcUrl').value = 'ws://' + ip + ':9090';
-}
-
-function rvizConnect() {
-  const url = document.getElementById('rvcUrl').value.trim();
-  if (!url) return;
-  if (rvizWS) { rvizWS.close(); rvizWS = null; }
-  rvizWS = new WebSocket(url);
-  rvizWS.onopen = () => {
-    setRvcStatus(true);
-    toast('rosbridge 已连接', 'success');
-    rvizSubscribeAll();
-  };
-  rvizWS.onclose  = () => setRvcStatus(false);
-  rvizWS.onerror  = () => { setRvcStatus(false); toast('rosbridge 连接失败', 'error'); };
-  rvizWS.onmessage = e => { try { rvizHandleMsg(JSON.parse(e.data)); } catch(_) {} };
-}
-
-function rvizDisconnect() {
-  if (rvizWS) { rvizWS.close(); rvizWS = null; }
-}
-
-function setRvcStatus(ok) {
-  document.getElementById('rvcDot').style.background  = ok ? 'var(--success)' : 'var(--danger)';
-  document.getElementById('rvcDot').style.animation   = ok ? 'pulse 2s infinite' : 'none';
-  document.getElementById('rvcStatus').textContent    = ok ? 'rosbridge 已连接' : 'rosbridge 已断开';
-  document.getElementById('rvcConnBtn').style.display = ok ? 'none'  : 'block';
-  document.getElementById('rvcDiscBtn').style.display = ok ? 'block' : 'none';
-}
-
-function rvizSend(obj) {
-  if (rvizWS && rvizWS.readyState === WebSocket.OPEN) rvizWS.send(JSON.stringify(obj));
-}
-
-function rvizSubscribeAll() {
-  rvizSend({ op:'subscribe', topic:'/map',       type:'nav_msgs/OccupancyGrid',  throttle_rate:1000 });
-  rvizSend({ op:'subscribe', topic:'/tf',        type:'tf2_msgs/TFMessage',      throttle_rate:50   });
-  rvizSend({ op:'subscribe', topic:'/tf_static', type:'tf2_msgs/TFMessage',      throttle_rate:0    });
-  rvizSend({ op:'subscribe', topic:'/scan',      type:'sensor_msgs/LaserScan',   throttle_rate:80   });
-}
-
-// TF 缓存：存 map→odom 和 odom→base_link（或直接 map→base_link）
-const tfCache = {}; // key: "parent->child", value: {tx,ty,yaw}
-
-function tfSet(parent, child, tx, ty, yaw) {
-  tfCache[parent + '->' + child] = { tx, ty, yaw };
-}
-
-function tfCompose(t1, t2) {
-  const c = Math.cos(t1.yaw), s = Math.sin(t1.yaw);
-  return {
-    tx:  t1.tx + c * t2.tx - s * t2.ty,
-    ty:  t1.ty + s * t2.tx + c * t2.ty,
-    yaw: t1.yaw + t2.yaw
-  };
-}
-
-function tfGet(parent, child) {
-  // 直接查
-  const direct = tfCache[parent + '->' + child];
-  if (direct) return direct;
-  // BFS 最多三跳
-  for (const k1 of Object.keys(tfCache)) {
-    const [p1, m1] = k1.split('->');
-    if (p1 !== parent) continue;
-    // 两跳
-    const k2 = m1 + '->' + child;
-    if (tfCache[k2]) return tfCompose(tfCache[k1], tfCache[k2]);
-    // 三跳
-    for (const k2b of Object.keys(tfCache)) {
-      const [p2, m2] = k2b.split('->');
-      if (p2 !== m1) continue;
-      const k3 = m2 + '->' + child;
-      if (tfCache[k3]) return tfCompose(tfCompose(tfCache[k1], tfCache[k2b]), tfCache[k3]);
-    }
-  }
-  return null;
-}
-
-function quatToYaw(q) {
-  return Math.atan2(2*(q.w*q.z + q.x*q.y), 1 - 2*(q.y*q.y + q.z*q.z));
-}
-
-function rvizHandleMsg(msg) {
-  if (msg.op !== 'publish') return;
-  const d = msg.msg;
-
-  if (msg.topic === '/map') {
-    const firstMap = !rvizMap;
-    rvizMap = {
-      width:    d.info.width,
-      height:   d.info.height,
-      res:      d.info.resolution,
-      origin_x: d.info.origin.position.x,
-      origin_y: d.info.origin.position.y,
-      data:     d.data
-    };
-    rvizMapDirty = true;
-    document.getElementById('mapDot').style.background = 'var(--success)';
-    document.getElementById('mapDot').style.animation  = 'pulse 2s infinite';
-    document.getElementById('mapStatus').textContent   = '建图中';
-    document.getElementById('map-resolution').textContent = d.info.resolution.toFixed(3) + ' m';
-    document.getElementById('map-size').textContent    = d.info.width + '×' + d.info.height;
-    document.getElementById('rvizPlaceholder').style.display = 'none';
-    if (firstMap) rvizAutoFit();
-
-  } else if (msg.topic === '/tf' || msg.topic === '/tf_static') {
-    // 解析所有 TF 变换，缓存起来
-    for (const t of (d.transforms || [])) {
-      const parent = t.header.frame_id.replace(/^\//, '');
-      const child  = t.child_frame_id.replace(/^\//, '');
-      const tr = t.transform.translation;
-      const ro = t.transform.rotation;
-      tfSet(parent, child, tr.x, tr.y, quatToYaw(ro));
-    }
-    // 从 TF 链获取 map→base_link
-    const tf = tfGet('map', 'base_link');
-    if (tf) {
-      robotPose.x   = tf.tx;
-      robotPose.y   = tf.ty;
-      robotPose.yaw = tf.yaw;
-      hasPose = true;
-      const last = robotPath[robotPath.length - 1];
-      if (!last || Math.hypot(robotPose.x - last.x, robotPose.y - last.y) > 0.02) {
-        robotPath.push({ x: robotPose.x, y: robotPose.y });
-        if (robotPath.length > MAX_PATH) robotPath.shift();
-      }
-      document.getElementById('odom-x').textContent   = robotPose.x.toFixed(3) + ' m';
-      document.getElementById('odom-y').textContent   = robotPose.y.toFixed(3) + ' m';
-      document.getElementById('odom-yaw').textContent = (robotPose.yaw * 180 / Math.PI).toFixed(1) + '°';
-      document.getElementById('path-count').textContent = robotPath.length;
-    }
-
-  } else if (msg.topic === '/scan') {
-    if (!hasPose) return;
-    // 雷达装反180°，base_link→laser_frame yaw=π
-    // 用 map→base_link 位姿，scan角度加π补偿雷达安装方向
-    const laser_x  = robotPose.x;
-    const laser_y  = robotPose.y;
-    const laserYaw = robotPose.yaw + Math.PI; // 补偿雷达装反180°
-    const cos_l = Math.cos(laserYaw), sin_l = Math.sin(laserYaw);
-    const amin = d.angle_min, ainc = d.angle_increment;
-    const ranges = d.ranges, rmax = d.range_max || 3.5;
-    scanPoints = [];
-    for (let i = 0; i < ranges.length; i++) {
-      const r = ranges[i];
-      if (!isFinite(r) || r < 0.05 || r > rmax) continue;      const a = amin + i * ainc;
-      const lx = r * Math.cos(a), ly = r * Math.sin(a);
-      const wx = laser_x + lx * cos_l - ly * sin_l;
-      const wy = laser_y + lx * sin_l + ly * cos_l;
-      scanPoints.push({ x: wx, y: wy });
-    }
-    document.getElementById('scan-count').textContent = scanPoints.length;
-  }
-}
-
-// ── 渲染 ──────────────────────────────────────────────────
-// 标准ROS坐标系：X右，Y上。屏幕：X右，Y下。所以只需翻转Y。
-function w2c(wx, wy) {
-  const c = document.getElementById('rvizCanvas');
-  return {
-    x: c.width  / 2 + (wx - rvizView.x) * rvizView.scale,
-    y: c.height / 2 - (wy - rvizView.y) * rvizView.scale
-  };
-}
-
-function rvizRender() {
-  requestAnimationFrame(rvizRender);
-  const canvas = document.getElementById('rvizCanvas');
-  const container = document.getElementById('rvizContainer');
-  if (!container) return;
-  const cw = container.clientWidth, ch = container.clientHeight;
-  if (canvas.width !== cw || canvas.height !== ch) {
-    canvas.width = cw; canvas.height = ch;
-    rvizMapCache = null;
-  }
-  const ctx = canvas.getContext('2d');
-
-  // RViz 风格背景
-  ctx.fillStyle = '#111318';
-  ctx.fillRect(0, 0, cw, ch);
-
-  // ── 网格 ──
-  if (showGrid) {
-    const gridPx = rvizView.scale; // 1m一格
-    if (gridPx > 10) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-      ctx.lineWidth = 1;
-      const ox = ((rvizView.x / 1) | 0) * 1;
-      const oy = ((rvizView.y / 1) | 0) * 1;
-      ctx.beginPath();
-      for (let wx = ox - cw/rvizView.scale; wx < ox + cw/rvizView.scale + 2; wx++) {
-        const px = w2c(wx, 0).x;
-        ctx.moveTo(px, 0); ctx.lineTo(px, ch);
-      }
-      for (let wy = oy - ch/rvizView.scale; wy < oy + ch/rvizView.scale + 2; wy++) {
-        const py = w2c(0, wy).y;
-        ctx.moveTo(0, py); ctx.lineTo(cw, py);
-      }
-      ctx.stroke();
-    }
-    // 原点十字
-    const o = w2c(0, 0);
-    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(o.x-10,o.y); ctx.lineTo(o.x+10,o.y);
-    ctx.moveTo(o.x,o.y-10); ctx.lineTo(o.x,o.y+10);
-    ctx.stroke();
-  }
-
-  // ── 地图 ──
-  if (rvizMap) {
-    if (rvizMapDirty || !rvizMapCache) {
-      const off = document.createElement('canvas');
-      off.width = rvizMap.width; off.height = rvizMap.height;
-      const octx = off.getContext('2d');
-      const img = octx.createImageData(rvizMap.width, rvizMap.height);
-      const data = rvizMap.data;
-      const W = rvizMap.width, H = rvizMap.height;
-      // OccupancyGrid row 0 = Y最小（地图底部），屏幕row 0 = 顶部，需要垂直翻转
-      for (let row = 0; row < H; row++) {
-        for (let col = 0; col < W; col++) {
-          const v = data[(H - 1 - row) * W + col];
-          let r, g, b;
-          if (v < 0)        { r=99;  g=99;  b=117; } // 未探索：中灰
-          else if (v === 0) { r=236; g=236; b=236; } // 空闲：近白
-          else              { r=20;  g=20;  b=20;  } // 障碍：近黑
-          const idx = (row * W + col) * 4;
-          img.data[idx]=r; img.data[idx+1]=g; img.data[idx+2]=b; img.data[idx+3]=255;
-        }
-      }
-      octx.putImageData(img, 0, 0);
-      rvizMapCache = off;
-      rvizMapDirty = false;
-    }
-    // ── 地图四角调试 ──
-    if (window._rvizDebug) {
-      const corners = [
-        {wx: rvizMap.origin_x,                          wy: rvizMap.origin_y,                           label:'BL'},
-        {wx: rvizMap.origin_x + rvizMap.width*rvizMap.res, wy: rvizMap.origin_y,                        label:'BR'},
-        {wx: rvizMap.origin_x,                          wy: rvizMap.origin_y + rvizMap.height*rvizMap.res, label:'TL'},
-        {wx: rvizMap.origin_x + rvizMap.width*rvizMap.res, wy: rvizMap.origin_y + rvizMap.height*rvizMap.res, label:'TR'},
-      ];
-      corners.forEach(c => {
-        const p = w2c(c.wx, c.wy);
-        ctx.fillStyle = '#00ffff';
-        ctx.fillRect(p.x-3, p.y-3, 6, 6);
-        ctx.fillText(c.label+'('+c.wx.toFixed(1)+','+c.wy.toFixed(1)+')', p.x+5, p.y+4);
-      });
-    }
-    const mapW_px = rvizMap.width  * rvizMap.res * rvizView.scale;
-    const mapH_px = rvizMap.height * rvizMap.res * rvizView.scale;
-    const tl = w2c(rvizMap.origin_x, rvizMap.origin_y + rvizMap.height * rvizMap.res);
-    ctx.imageSmoothingEnabled = rvizView.scale < 6;
-    ctx.drawImage(rvizMapCache, tl.x, tl.y, mapW_px, mapH_px);
-  }
-
-  // ── 轨迹 ──
-  if (showPath && robotPath.length > 1) {
-    ctx.beginPath();
-    ctx.strokeStyle = '#4fc3f7';
-    ctx.lineWidth = 2;
-    ctx.lineJoin = 'round';
-    ctx.globalAlpha = 0.9;
-    const p0 = w2c(robotPath[0].x, robotPath[0].y);
-    ctx.moveTo(p0.x, p0.y);
-    for (let i = 1; i < robotPath.length; i++) {
-      const p = w2c(robotPath[i].x, robotPath[i].y);
-      ctx.lineTo(p.x, p.y);
-    }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  // ── 雷达点云 ──
-  if (showScan && scanPoints.length > 0) {
-    const dot = Math.max(1.5, rvizView.scale * 0.015);
-    ctx.fillStyle = '#ff6b35';
-    ctx.globalAlpha = 0.9;
-    for (const pt of scanPoints) {
-      const p = w2c(pt.x, pt.y);
-      ctx.fillRect(p.x - dot/2, p.y - dot/2, dot, dot);
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  // ── 小车（RViz 风格箭头）──
-  if (hasPose || rvizMap) {
-    const rp = w2c(robotPose.x, robotPose.y);
-    const s = Math.max(10, Math.min(36, rvizView.scale * 0.35));
-    ctx.save();
-    ctx.translate(rp.x, rp.y);
-    ctx.rotate(-robotPose.yaw);
-    ctx.fillStyle = '#ff4081';
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo( s,      0);
-    ctx.lineTo(-s*0.6,  s*0.5);
-    ctx.lineTo(-s*0.25, 0);
-    ctx.lineTo(-s*0.6, -s*0.5);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-
-  // ── 比例尺 ──
-  const scaleEl = document.getElementById('rvizScale');
-  if (scaleEl) {
-    const m = rvizView.scale >= 80 ? 0.5 : rvizView.scale >= 20 ? 1 : 2;
-    scaleEl.textContent = m + 'm = ' + (m * rvizView.scale).toFixed(0) + 'px  ×' + rvizView.scale.toFixed(0);
-  }
-
-  // ── 调试叠加 ──
-  if (window._rvizDebug && rvizMap && hasPose) {
-    ctx.font = '11px monospace';
-    ctx.fillStyle = '#ffff00';
-    const lines = [
-      'robot: (' + robotPose.x.toFixed(3) + ', ' + robotPose.y.toFixed(3) + ') yaw=' + (robotPose.yaw*180/Math.PI).toFixed(1) + '°',
-      'laser TF: ' + (()=>{const t=tfGet('map','laser_frame');return t?'('+t.tx.toFixed(3)+','+t.ty.toFixed(3)+') yaw='+( t.yaw*180/Math.PI).toFixed(1)+'°':'null'})(),
-      'map origin: (' + rvizMap.origin_x.toFixed(3) + ', ' + rvizMap.origin_y.toFixed(3) + ') res=' + rvizMap.res,
-      'scan[0]: ' + (scanPoints[0] ? '('+scanPoints[0].x.toFixed(3)+','+scanPoints[0].y.toFixed(3)+')' : 'none'),
-      'scan[0] map px: ' + (scanPoints[0] ? ((scanPoints[0].x-rvizMap.origin_x)/rvizMap.res).toFixed(1)+','+ ((scanPoints[0].y-rvizMap.origin_y)/rvizMap.res).toFixed(1) : 'none'),
-    ];
-    lines.forEach((l,i) => {
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(8, 8 + i*16, ctx.measureText(l).width + 6, 14);
-      ctx.fillStyle = '#ffff00';
-      ctx.fillText(l, 11, 20 + i*16);
-    });
-    // 在小车位置画十字
-    const rp = w2c(robotPose.x, robotPose.y);
-    ctx.strokeStyle = '#00ff00'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(rp.x-15,rp.y); ctx.lineTo(rp.x+15,rp.y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(rp.x,rp.y-15); ctx.lineTo(rp.x,rp.y+15); ctx.stroke();
-    // 在laser_frame位置画圆
-    const tfL = tfGet('map','laser_frame');
-    if (tfL) {
-      const lp = w2c(tfL.tx, tfL.ty);
-      ctx.strokeStyle = '#ff00ff'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(lp.x, lp.y, 8, 0, Math.PI*2); ctx.stroke();
-    }
-  }
-}
-
-// ── 视图控制 ──────────────────────────────────────────────
-function rvizAutoFit() {
-  if (!rvizMap) return;
-  const canvas = document.getElementById('rvizCanvas');
-  if (!canvas.width) return;
-  const mw = rvizMap.width  * rvizMap.res;
-  const mh = rvizMap.height * rvizMap.res;
-  rvizView.scale = Math.min(canvas.width / mw, canvas.height / mh) * 0.88;
-  rvizView.x = rvizMap.origin_x + mw / 2;
-  rvizView.y = rvizMap.origin_y + mh / 2;
-}
-
-function rvizResetView() {
-  if (rvizMap) { rvizAutoFit(); return; }
-  rvizView = { x: 0, y: 0, scale: 50 };
-}
-
-function rvizToggleScan() {
-  showScan = !showScan;
-  document.getElementById('scanToggleLabel').textContent = '📡 雷达 ' + (showScan ? '✓' : '✗');
-}
-function rvizTogglePath() {
-  showPath = !showPath;
-  document.getElementById('pathToggleLabel').textContent = '🛤️ 轨迹 ' + (showPath ? '✓' : '✗');
-}
-function rvizToggleGrid() {
-  showGrid = !showGrid;
-  document.getElementById('gridToggleLabel').textContent = '⊞ 网格 ' + (showGrid ? '✓' : '✗');
-}
-function rvizClearPath() {
-  robotPath = [];
-  document.getElementById('path-count').textContent = '0';
-}
-
-function saveMap() {
-  if (!rvizMap) { toast('暂无地图数据', 'warning'); return; }
-  const canvas = document.getElementById('rvizCanvas');
-  const a = document.createElement('a');
-  a.download = 'map_' + Date.now() + '.png';
-  a.href = canvas.toDataURL('image/png');
-  a.click();
-}
-
-// ── 鼠标/触摸交互 ─────────────────────────────────────────
-(function() {
-  const el = document.getElementById('rvizContainer');
-  if (!el) return;
-
-  // 滚轮缩放（以鼠标为中心）
-  el.addEventListener('wheel', e => {
-    e.preventDefault();
-    const rect = el.getBoundingClientRect();
-    const canvas = document.getElementById('rvizCanvas');
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const wx = rvizView.x + (mx - canvas.width/2)  / rvizView.scale;
-    const wy = rvizView.y - (my - canvas.height/2) / rvizView.scale;
-    const f = e.deltaY < 0 ? 1.12 : 0.89;
-    rvizView.scale = Math.max(4, Math.min(800, rvizView.scale * f));
-    rvizView.x = wx - (mx - canvas.width/2)  / rvizView.scale;
-    rvizView.y = wy + (my - canvas.height/2) / rvizView.scale;
-  }, { passive: false });
-
-  el.addEventListener('mousedown', e => {
-    rvizDrag = { sx: e.clientX, sy: e.clientY, vx: rvizView.x, vy: rvizView.y };
-    el.style.cursor = 'grabbing';
-  });
-  window.addEventListener('mousemove', e => {
-    if (!rvizDrag) return;
-    rvizView.x = rvizDrag.vx - (e.clientX - rvizDrag.sx) / rvizView.scale;
-    rvizView.y = rvizDrag.vy + (e.clientY - rvizDrag.sy) / rvizView.scale;
-  });
-  window.addEventListener('mouseup', () => {
-    rvizDrag = null;
-    const c = document.getElementById('rvizContainer');
-    if (c) c.style.cursor = 'grab';
-  });
-
-  // 鼠标坐标显示
-  el.addEventListener('mousemove', e => {
-    const rect = el.getBoundingClientRect();
-    const canvas = document.getElementById('rvizCanvas');
-    const wx = rvizView.x + (e.clientX - rect.left  - canvas.width/2)  / rvizView.scale;
-    const wy = rvizView.y - (e.clientY - rect.top   - canvas.height/2) / rvizView.scale;
-    const coordEl = document.getElementById('rvizCoords');
-    if (coordEl) coordEl.textContent = 'x: ' + wx.toFixed(2) + '  y: ' + wy.toFixed(2);
-  });
-
-  // 触摸
-  let lastDist = 0;
-  el.addEventListener('touchstart', e => {
-    if (e.touches.length === 1)
-      rvizDrag = { sx: e.touches[0].clientX, sy: e.touches[0].clientY, vx: rvizView.x, vy: rvizView.y };
-    else if (e.touches.length === 2)
-      lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-  }, { passive: true });
-  el.addEventListener('touchmove', e => {
-    if (e.touches.length === 1 && rvizDrag) {
-      rvizView.x = rvizDrag.vx - (e.touches[0].clientX - rvizDrag.sx) / rvizView.scale;
-      rvizView.y = rvizDrag.vy + (e.touches[0].clientY - rvizDrag.sy) / rvizView.scale;
-    } else if (e.touches.length === 2) {
-      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      if (lastDist > 0) rvizView.scale = Math.max(4, Math.min(800, rvizView.scale * d / lastDist));
-      lastDist = d;
-    }
-  }, { passive: true });
-  el.addEventListener('touchend', () => { rvizDrag = null; lastDist = 0; });
-})();
-
-// 切换到室内建图页面时初始化
-function initMapSSE() {
-  rvizInitUrl();
-  if (!initMapSSE._started) {
-    initMapSSE._started = true;
-    requestAnimationFrame(rvizRender);
-  }
-}
-fetchData();
-setInterval(fetchData, 3000);
-</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/location.js"></script>
+<script src="js/video.js"></script>
+<script src="js/rviz.js"></script>
 </body>
 </html>
