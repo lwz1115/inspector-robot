@@ -1,0 +1,11 @@
+{
+    "version" : "1.0",
+    "configurations" : [
+        {
+            "customPlaygroundType" : "device",
+            "localRepoPath" : "C:/Users/Administrator/Desktop/catkin_lwz/ROS/WeChat/robotapp",
+            "playground" : "standard",
+            "type" : "uni-app:app-android"
+        }
+    ]
+}
