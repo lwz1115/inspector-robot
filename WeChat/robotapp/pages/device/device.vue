@@ -4,10 +4,6 @@
     <view class="safe-area-top"></view>
     
     <view class="header" :style="headerBarStyle">
-      <text class="header-title">设备监控</text>
-      <view class="refresh-btn" @click="fetchData">
-        <text class="refresh-icon">{{ loading ? '⏳' : '🔄' }}</text>
-      </view>
     </view>
 
     <!-- 连接状态 -->
@@ -15,6 +11,20 @@
       <text class="status-dot">●</text>
       <text class="status-text">{{ connected ? '已连接' : '未连接' }}</text>
       <text class="status-time" v-if="lastUpdate.length > 0">更新: {{ lastUpdate }}</text>
+    </view>
+
+    <!-- 卫星信号 -->
+    <view class="satellite-bar">
+      <view class="satellite-info">
+        <text class="satellite-icon">🛰️</text>
+        <view class="satellite-details">
+          <text class="satellite-label">卫星信号</text>
+          <text class="satellite-value">{{ satelliteSignal }} ({{ robotData.satellites || 0 }}/14)</text>
+        </view>
+      </view>
+      <view class="satellite-progress">
+        <view class="satellite-progress-bar" :style="{ width: satelliteProgress + '%', backgroundColor: satelliteColor }"></view>
+      </view>
     </view>
 
     <!-- 数据卡片区 -->
@@ -112,15 +122,15 @@
           </view>
         </view>
 
-        <!-- 气体浓度数据 -->
+        <!-- 人员数数据 -->
         <view class="card card-half">
           <view class="card-header">
-            <text class="card-icon">💨</text>
-            <text class="card-title" :style="valueStyle">气体浓度</text>
+            <text class="card-icon">👥</text>
+            <text class="card-title" :style="valueStyle">人员数</text>
           </view>
           <view class="card-body">
             <view class="data-row">
-              <text class="data-value large" :style="valueStyle">{{ robotData.gas != null ? robotData.gas : '--' }}</text>
+              <text class="data-value large" :style="valueStyle">{{ robotData.person_count != null ? robotData.person_count : '--' }}</text>
             </view>
           </view>
         </view>
@@ -188,11 +198,11 @@ export default {
     },
     latText() {
       const s = this.robotData.latitude
-      return s.length > 0 ? s : '--'
+      return s != null ? s : '--'
     },
     lonText() {
       const s = this.robotData.longitude
-      return s.length > 0 ? s : '--'
+      return s != null ? s : '--'
     },
     camResText() {
       const s = this.robotData.cameraResolution
@@ -201,7 +211,30 @@ export default {
     cardStyle()  { return 'background:' + this.theme.card + ';border:1rpx solid ' + this.theme.border + ';' },
     cardHdStyle(){ return 'background:' + this.theme.inputBg + ';border-bottom:1rpx solid ' + this.theme.border + ';' },
     labelStyle() { return 'color:' + this.theme.textSub + ';' },
-    valueStyle() { return 'color:' + this.theme.text + ';' }
+    valueStyle() { return 'color:' + this.theme.text + ';' },
+    satelliteSignal() {
+      const satellites = this.robotData.satellites || 0;
+      const maxSatellites = 14;
+      const signalPercentage = Math.min((satellites / maxSatellites) * 100, 100);
+      if (signalPercentage >= 80) return '强';
+      if (signalPercentage >= 50) return '中';
+      if (signalPercentage >= 20) return '弱';
+      return '无';
+    },
+    satelliteProgress() {
+      const satellites = this.robotData.satellites || 0;
+      const maxSatellites = 14;
+      return Math.min((satellites / maxSatellites) * 100, 100);
+    },
+    satelliteColor() {
+      const satellites = this.robotData.satellites || 0;
+      const maxSatellites = 14;
+      const signalPercentage = Math.min((satellites / maxSatellites) * 100, 100);
+      if (signalPercentage >= 80) return '#52c41a'; // 强 - 绿色
+      if (signalPercentage >= 50) return '#faad14'; // 中 - 黄色
+      if (signalPercentage >= 20) return '#fa8c16'; // 弱 - 橙色
+      return '#f5222d'; // 无 - 红色
+    }
   },
 
   onShow() {
@@ -234,7 +267,6 @@ export default {
     async fetchData() {
       if (this.loading) return
       this.loading = true
-      uni.showLoading({ title: '获取数据中...', mask: true })
       try {
         // 尝试从多个可能的API接口获取数据
         const apiEndpoints = [
@@ -255,7 +287,6 @@ export default {
               timeout: 10000
             })
             
-            uni.hideLoading()
             const code = res.statusCode
             const raw = res.data
             
@@ -280,12 +311,23 @@ export default {
                 if (data.lat) data.latitude = data.lat
                 if (data.lng) data.longitude = data.lng
                 if (data.lon) data.longitude = data.lon
-                if (data.latitude) data.latitude = data.latitude.toString()
-                if (data.longitude) data.longitude = data.longitude.toString()
+                
+                // 确保温湿度字段被正确处理
+                if (data.temp) data.temperature = data.temp
+                if (data.hum) data.humidity = data.hum
+                
+                // 确保烟雾值字段被正确处理
+                if (data.smokeValue) data.smoke = data.smokeValue
+                
+                // 确保人员数字段被正确处理
+                if (data.personCount) data.person_count = data.personCount
+                if (data.peopleCount) data.person_count = data.peopleCount
+                
+                // 确保卫星数字段被正确处理
+                if (data.sat) data.satellites = data.sat
+                if (data.satCount) data.satellites = data.satCount
                 
                 // 确保电量和电压字段被正确处理
-                if (data.battery) data.battery = data.battery
-                if (data.voltage) data.voltage = data.voltage
                 if (data.batt) data.battery = data.batt
                 if (data.volt) data.voltage = data.volt
                 
@@ -311,13 +353,11 @@ export default {
         }
         
         if (!success) {
-          uni.hideLoading()
           this.connected = false
           console.error('所有API接口都获取数据失败')
           uni.showToast({ title: '无法获取设备数据', icon: 'none', duration: 2500 })
         }
       } catch (e) {
-        uni.hideLoading()
         console.error('获取数据失败:', e)
         this.connected = false
         uni.showToast({ title: '网络错误', icon: 'none', duration: 2500 })
@@ -356,26 +396,9 @@ export default {
 
 /* 顶部标题 */
 .header {
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
   background: #1890ff;
   padding: 30rpx;
   padding-top: calc(30rpx + env(safe-area-inset-top));
-}
-
-.header-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.refresh-btn {
-  padding: 10rpx 20rpx;
-}
-
-.refresh-icon {
-  font-size: 40rpx;
 }
 
 /* 状态栏 */
@@ -415,6 +438,61 @@ export default {
 .status-time {
   font-size: 22rpx;
   color: #999999;
+}
+
+/* 卫星信号 */
+.satellite-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 30rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e8e8e8;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.satellite-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.satellite-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.satellite-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.satellite-label {
+  font-size: 24rpx;
+  color: #999999;
+  margin-bottom: 4rpx;
+}
+
+.satellite-value {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+}
+
+.satellite-progress {
+  width: 200rpx;
+  height: 16rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin-left: 30rpx;
+}
+
+.satellite-progress-bar {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 /* 滚动区域 */

@@ -1,7 +1,7 @@
 export function emptyRobotData() {
   return {
-    latitude: '',
-    longitude: '',
+    latitude: null,
+    longitude: null,
     altitude: null,
     speed: null,
     roll: null,
@@ -20,15 +20,21 @@ export function emptyRobotData() {
     smoke: null,
     gas: null,
     light: null,
-    pressure: null
+    pressure: null,
+    batteryLevel: null,
+    smokeValue: null,
+    battery: null,
+    voltage: null,
+    person_count: null,
+    satellites: null
   }
 }
 
 export function normalizeRobotData(raw) {
   const d = emptyRobotData()
   if (raw == null) return d
-  d.latitude = toStrField(raw, 'latitude')
-  d.longitude = toStrField(raw, 'longitude')
+  d.latitude = toNumOrNull(raw, 'latitude')
+  d.longitude = toNumOrNull(raw, 'longitude')
   d.altitude = toNumOrNull(raw, 'altitude')
   d.speed = toNumOrNull(raw, 'speed')
   d.roll = toNumOrNull(raw, 'roll')
@@ -48,6 +54,12 @@ export function normalizeRobotData(raw) {
   d.gas = toNumOrNull(raw, 'gas')
   d.light = toNumOrNull(raw, 'light')
   d.pressure = toNumOrNull(raw, 'pressure')
+  d.batteryLevel = toNumOrNull(raw, 'batteryLevel') || toNumOrNull(raw, 'battery')
+  d.smokeValue = toNumOrNull(raw, 'smokeValue') || toNumOrNull(raw, 'smoke')
+  d.battery = toNumOrNull(raw, 'battery') || toNumOrNull(raw, 'batteryLevel')
+  d.voltage = toNumOrNull(raw, 'voltage') || toNumOrNull(raw, 'volt')
+  d.person_count = toNumOrNull(raw, 'person_count')
+  d.satellites = toNumOrNull(raw, 'satellites')
   return d
 }
 

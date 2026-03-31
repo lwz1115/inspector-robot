@@ -58,14 +58,14 @@
                     "amap" : {
                         "name" : "amap_13865571613AzOB2tqwj",
                         "__platform__" : [ "ios", "android" ],
-                        "appkey_ios" : "amap_13865571613AzOB2tqwj",
+                        "appkey_ios" : "50af93566ee2e3f73192d2735b9b1aab",
                         "appkey_android" : "50af93566ee2e3f73192d2735b9b1aab"
                     }
                 },
                 "maps" : {
                     "amap" : {
                         "name" : "amap_13865571613AzOB2tqwj",
-                        "appkey_ios" : "amap_13865571613AzOB2tqwj",
+                        "appkey_ios" : "50af93566ee2e3f73192d2735b9b1aab",
                         "appkey_android" : "50af93566ee2e3f73192d2735b9b1aab"
                     }
                 }
