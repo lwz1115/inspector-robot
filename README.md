@@ -44,18 +44,19 @@
 ### 环境要求
 
 - 系统：Ubuntu 18.04（Jetson Nano）
-- ROS 版本：Melodic
+- ROS 版本：Melodic（ROS 1）
 - Python：2.7（ROS Melodic 默认）或 3.6+
-- STM32：固件已烧录，串口可用
+- STM32：代码使用 KEIL5 打开，烧录到 STM32F407 开发板
 - Java 18 + Maven（后端）
 - MySQL 8.0（后端数据库）
+- 所有设备需要在同一局域网内
 
 ### 安装与运行
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/yourname/patrol-robot.git
-   cd patrol-robot/ROS
+   git clone https://github.com/lwz1115/inspector-robot.git
+   cd inspector-robot/ROS
    ```
 
 2. **编译 ROS 工作空间**
@@ -68,7 +69,7 @@
 
 3. **启动后端**
    ```bash
-   cd find_robot
+   # 使用 IntelliJ IDEA 打开 ROS/find_robot 目录
    # 确保 application.properties 中 IP 配置正确
    mvn spring-boot:run
    # 后端运行在 http://0.0.0.0:8080
@@ -95,6 +96,16 @@
    # 用 HBuilderX 打开 ROS/WeChat/robotapp 运行到微信开发者工具
    ```
 
+6. **STM32 代码**
+   ```bash
+   # 使用 KEIL5 打开 ROS/STM32 目录下的项目
+   # 编译并烧录到 STM32F407 开发板
+   ```
+
+7. **访问方式**
+   - **Web 端**：直接在浏览器输入后端服务器 IP，例如 `http://192.168.1.100:8080`
+   - **微信小程序**：通过 HBuilderX 运行到微信开发者工具或真机
+
 ## 📁 项目结构
 
 ```
@@ -108,12 +119,57 @@ patrol-robot/
 │   │   ├── n10_pkg/                # 导航控制器
 │   │   ├── n10_slam/               # SLAM + 导航
 │   │   └── packet_pkg/             # STM32 串口通信协议
-│   ├── find_robot/                 # Spring Boot 后端
+│   ├── find_robot/                 # Spring Boot 后端（使用 IntelliJ IDEA 打开）
 │   ├── WeChat/                     # UniApp 微信小程序前端
-│   ├── STM32/                      # STM32 固件（FreeRTOS）
+│   ├── STM32/                      # STM32 代码（使用 KEIL5 打开，烧录到 STM32F407）
 │   └── launch/                     # 一键启动 launch 文件
 ```
 
-##  作者
+## 🌐 内网穿透（可选）
+
+由于项目默认要求所有设备在同一局域网内，若需要外网访问，可以使用内网穿透工具。以下是快速设置方法：
+
+1. **使用 ngrok**
+   ```bash
+   # 下载并安装 ngrok
+   # 注册账号并获取授权 token
+   ngrok http 8080
+   # 会生成一个外网访问地址，如 https://xxxx.ngrok.io
+   ```
+
+2. **使用 frp**
+   ```bash
+   # 下载 frp 客户端和服务端
+   # 配置 frpc.ini 文件指向服务端
+   ./frpc -c frpc.ini
+   # 通过服务端 IP 和端口访问
+   ```
+
+## 🚀 ROS 1 环境搭建
+
+1. **安装 ROS Melodic**
+   ```bash
+   sudo apt update
+   sudo apt install -y ros-melodic-desktop-full
+   echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+2. **安装依赖**
+   ```bash
+   sudo apt install -y python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential
+   sudo rosdep init || true
+   rosdep update || true
+   ```
+
+3. **创建工作空间**
+   ```bash
+   mkdir -p ~/catkin_ws/src
+   cd ~/catkin_ws
+   catkin_make
+   source devel/setup.bash
+   ```
+
+## 👤 作者
 
 李文卓 · 物联2431 · © 2025
